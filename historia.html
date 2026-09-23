@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nuestra historia</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
   <div class="starfield" aria-hidden="true"></div>
@@ -17,10 +17,12 @@
       significa que es una escena de minijuego: no se puede avanzar hasta completarlo.
       El propio minijuego (en juego.js o main.js) llama a desbloquearContinuar()
       cuando se gana, lo que quita el "disabled" automáticamente.
+      -> Si quieres que una escena NO bloquee, quita el "disabled" (y su .pista-bloqueo).
     - Para añadir un hito nuevo: duplica una escena de tipo "solo scroll" (la de
       abajo del todo) y cambia el texto/fotos.
     - Para añadir un minijuego nuevo: duplica la escena del componente que más se
-      parezca (máquina, corazón, hilo arrastrable...) y ajusta el contenido.
+      parezca (pizarra, calendario, hilo rojo, máquina, corazón...) y ajusta el contenido.
+    - [v4] Sin emojis: todos los iconos son <svg> escritos directamente en el HTML.
   -->
 
   <div class="wrap" style="padding-top:70px;">
@@ -41,7 +43,105 @@
       </div>
     </section>
 
-    <!-- ESCENA 2 — Hito 1 (solo scroll) -->
+    <!-- ESCENA 2 — [v4] Pizarra "¿cuánto es 1 año?" (gated: hay que borrar la pizarra)
+         Cada <li> lleva en data-num-dos el dato para 2 años (y data-unidad-dos si
+         cambia la unidad). juego.js -> initPizarra hace el efecto del borrador. -->
+    <section class="escena">
+      <span class="date">Antes de seguir, unas cuentas</span>
+      <h2>¿Cuánto es un año?</h2>
+
+      <div class="pizarra" id="pizarra">
+        <p class="pizarra-titulo">Feliz...</p>
+        <ul class="pizarra-lista">
+          <li data-num-dos="2" data-unidad-dos="años"><span class="num">1</span><span class="unidad">año</span></li>
+          <li data-num-dos="24"><span class="num">12</span><span class="unidad">meses</span></li>
+          <li data-num-dos="104"><span class="num">52</span><span class="unidad">semanas</span></li>
+          <li data-num-dos="730"><span class="num">365</span><span class="unidad">días</span></li>
+          <li data-num-dos="17.520"><span class="num">8.760</span><span class="unidad">horas</span></li>
+          <li data-num-dos="1.051.200"><span class="num">525.600</span><span class="unidad">minutos</span></li>
+          <li data-num-dos="63.072.000"><span class="num">31.536.000</span><span class="unidad">segundos</span></li>
+        </ul>
+        <!-- Sergio: cambia este mensaje si quieres -->
+        <p class="pizarra-mensaje">Ya no es un año. Ahora son dos.</p>
+
+        <!-- Borrador (SVG): lo mueve el JS por encima de la pizarra -->
+        <div class="borrador" aria-hidden="true">
+          <svg viewBox="0 0 56 30"><rect x="1" y="1" width="54" height="28" rx="4" fill="#cfc8b8"/><rect x="1" y="1" width="54" height="13" rx="4" fill="#2c2c31"/><rect x="1" y="9" width="54" height="5" fill="#2c2c31"/></svg>
+        </div>
+      </div>
+
+      <div class="zona-accion">
+        <button class="btn btn-icono" id="btn-borrar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 16l9.5-9.5a2 2 0 013 0l3 3a2 2 0 010 3L11 20H7z"/><path d="M9 11l5 5M11 20h9"/></svg>
+          Borrar la pizarra
+        </button>
+      </div>
+
+      <div class="zona-continuar">
+        <button class="btn continuar" disabled>Continuar</button>
+        <p class="pista-bloqueo">Borra la pizarra para seguir</p>
+      </div>
+    </section>
+
+    <!-- ESCENA 3 — [v4] Deslizador de fotos "tira hacia abajo" (gated: llegar a la última foto)
+         Una foto por cada <figure class="tira-foto">; añade o quita las que quieras
+         (el JS se adapta solo). Sustituye cada .ph-placeholder por
+         <img src="URL-DE-R2" alt="..."> cuando tengas las fotos. -->
+    <section class="escena">
+      <span class="date">Tira hacia abajo</span>
+      <h2>Mira cómo pasa el tiempo</h2>
+
+      <div class="tira">
+        <div class="tira-visor">
+          <figure class="polaroid tira-foto" style="--rot:-2deg"><div class="ph-placeholder">foto 1<br>(URL de R2)</div><figcaption>pie de foto</figcaption></figure>
+          <figure class="polaroid tira-foto" style="--rot:2deg"><div class="ph-placeholder">foto 2</div><figcaption>pie de foto</figcaption></figure>
+          <figure class="polaroid tira-foto" style="--rot:-1deg"><div class="ph-placeholder">foto 3</div><figcaption>pie de foto</figcaption></figure>
+          <figure class="polaroid tira-foto" style="--rot:3deg"><div class="ph-placeholder">foto 4</div><figcaption>pie de foto</figcaption></figure>
+          <figure class="polaroid tira-foto" style="--rot:-3deg"><div class="ph-placeholder">foto 5</div><figcaption>pie de foto</figcaption></figure>
+        </div>
+        <div class="tira-pista">
+          <div class="tira-asa sugerir" role="slider" tabindex="0" aria-label="Tira hacia abajo para cambiar de foto" aria-valuemin="1" aria-valuenow="1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7l6 5 6-5M6 13l6 5 6-5"/></svg>
+          </div>
+        </div>
+      </div>
+      <p class="tira-cuenta">1 / 5</p>
+
+      <div class="zona-continuar">
+        <button class="btn continuar" disabled>Continuar</button>
+        <p class="pista-bloqueo">Tira hasta la última foto para seguir</p>
+      </div>
+    </section>
+
+    <!-- ESCENA 4 — [v4] Calendario: noviembre 2024 -> 2025 -> 2026 (gated: llegar a 2026)
+         juego.js -> initCalendario pinta el mes; cambia los años/etiquetas en su
+         constante PASOS. -->
+    <section class="escena">
+      <span class="date">Un día que no se me olvida</span>
+      <h2>El día uno</h2>
+      <p class="lead">Pulsa la flecha y pasa la hoja.</p>
+
+      <div class="calendario" id="calendario">
+        <div class="cal-hoja">
+          <div class="cal-cabecera">
+            <span class="sticker-word" data-text="NOVIEMBRE"></span>
+            <span class="cal-anio">2024</span>
+          </div>
+          <div class="cal-grid"></div>
+        </div>
+        <div class="cal-etiqueta"><span></span></div>
+        <button class="cal-siguiente" aria-label="Pasar al año siguiente">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+        </button>
+      </div>
+
+      <div class="zona-continuar">
+        <button class="btn continuar" disabled>Continuar</button>
+        <p class="pista-bloqueo">Pasa la hoja hasta el final para seguir</p>
+      </div>
+    </section>
+
+    <!-- ESCENA 5 — Hito 1 (solo scroll) -->
     <section class="escena">
       <span class="date">Hito 1 — pon la fecha aquí</span>
       <h2>Cómo empezó todo</h2>
@@ -57,7 +157,7 @@
       </div>
     </section>
 
-    <!-- ESCENA 3 — Minijuego: botón que huye (gated) -->
+    <!-- ESCENA 6 — Minijuego: botón que huye (gated) -->
     <section class="escena">
       <span class="date">Antes de seguir, una pregunta</span>
       <h2 id="mensaje-pregunta">¿Quieres aguantarme dos años más?</h2>
@@ -71,7 +171,7 @@
       </div>
     </section>
 
-    <!-- ESCENA 4 — Hito 2 + "ABRIR" repurposado como nota escondida (no gated) -->
+    <!-- ESCENA 7 — Hito 2 + "ABRIR" repurposado como nota escondida (no gated) -->
     <section class="escena">
       <span class="date">Hito 2 — pon la fecha aquí</span>
       <h2>La primera cita</h2>
@@ -83,7 +183,8 @@
       <div class="pull-photo">
         <button class="pull-tab">
           <span class="sticker-word" data-text="ABRIR"></span>
-          <span class="flecha">▾</span>
+          <!-- [v4] flecha SVG (antes era un carácter de texto) -->
+          <span class="flecha"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg></span>
         </button>
         <div class="strip">
           <p class="lead" style="margin:0;">
@@ -99,14 +200,17 @@
       </div>
     </section>
 
-    <!-- ESCENA 5 — Minijuego: máquina expendedora (gated) -->
+    <!-- ESCENA 8 — Minijuego: máquina expendedora (gated) -->
     <section class="escena">
       <span class="date">Pulsa y espera</span>
       <h2><span class="sticker-word" data-text="MAQUINA"></span></h2>
       <p class="lead">Dale al botón. A ver qué sale.</p>
       <div class="maquina">
         <div class="ventana">
-          <div class="producto">🎞️</div>
+          <!-- [v4] el "producto" es ahora un SVG (tira de fotomatón), no un emoji -->
+          <div class="producto">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="2.5" width="18" height="19" rx="2"/><path d="M7.5 2.5v19M16.5 2.5v19M3 7h4.5M3 12h4.5M3 17h4.5M16.5 7H21M16.5 12H21M16.5 17H21"/></svg>
+          </div>
         </div>
         <button class="btn">Pulsar</button>
         <div class="resultado">
@@ -123,7 +227,7 @@
       </div>
     </section>
 
-    <!-- ESCENA 6 — Minijuego: memoria (gated) -->
+    <!-- ESCENA 9 — Minijuego: memoria (gated) -->
     <section class="escena">
       <span class="date">Un pequeño reto</span>
       <h2>Encuentra las parejas</h2>
@@ -141,7 +245,7 @@
       </div>
     </section>
 
-    <!-- ESCENA 7 — Hito 3 (solo scroll) -->
+    <!-- ESCENA 10 — Hito 3 (solo scroll) -->
     <section class="escena">
       <span class="date">Hito 3 — pon la fecha aquí</span>
       <h2>Un viaje juntos</h2>
@@ -161,7 +265,7 @@
       </div>
     </section>
 
-    <!-- ESCENA 8 — Minijuego: corazón para completar (gated) -->
+    <!-- ESCENA 11 — Minijuego: corazón para completar (gated) -->
     <section class="escena">
       <span class="date">Un pequeño reto</span>
       <h2>Completa el corazón</h2>
@@ -175,27 +279,69 @@
       </div>
     </section>
 
-    <!-- ESCENA 9 — Minijuego: hilo para arrastrar (gated) -->
+    <!-- ESCENA 12 — [v4] Hilo rojo REDISEÑADO (gated: hay que dar la vuelta a la carta)
+         Ya no se arrastra. El botón anima el hilo entre las dos fotos y las va
+         desbloqueando; luego aparece una carta con "?" que se da la vuelta.
+         initHiloRojo (juego.js) calcula el recorrido del hilo con la posición real
+         de las dos fotos, así que puedes cambiar su tamaño en el CSS sin tocar el JS. -->
     <section class="escena">
-      <span class="date">Tira del hilo</span>
-      <h2>No sueltes...</h2>
-      <p class="lead">Arrastra el hilo hacia abajo del todo.</p>
-      <div class="hilo-arrastrable">
-        <div class="carril"></div>
-        <div class="asa">🧵</div>
-        <div class="meta">tira hasta aquí</div>
+      <span class="date">Una leyenda</span>
+      <h2>El hilo rojo</h2>
+      <p class="lead">Pulsa el botón y deja que el hilo haga su trabajo.</p>
+
+      <div class="hilo-rojo" id="hilo-rojo">
+        <svg class="hilo-rojo-svg" aria-hidden="true">
+          <path d="M0 0" />
+          <circle class="nudo" />
+          <circle class="nudo" />
+        </svg>
+
+        <figure class="polaroid hilo-foto hilo-foto-a">
+          <div class="ph-placeholder">foto A<br>(URL de R2)</div>
+          <figcaption>pie de foto</figcaption>
+          <div class="cubierta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>
+        </figure>
+
+        <figure class="polaroid hilo-foto hilo-foto-b">
+          <div class="ph-placeholder">foto B<br>(URL de R2)</div>
+          <figcaption>pie de foto</figcaption>
+          <div class="cubierta"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></div>
+        </figure>
       </div>
-      <p class="lead" style="text-align:center;">
-        <!-- Sergio: cambia este mensaje -->
-        <span class="resultado-hilo" style="opacity:0; transition:opacity .5s ease;">Cada hilo de esto nos ha traído hasta aquí.</span>
-      </p>
+
+      <div class="zona-accion">
+        <button class="btn btn-icono" id="btn-hilo">
+          <!-- Icono SVG de carrete de hilo -->
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4h14M5 20h14"/><rect x="7" y="4" width="10" height="16" rx="1.5"/><path d="M7 9l10 2M7 12.5l10 2M7 16l10 2"/></svg>
+          Tirar del hilo
+        </button>
+      </div>
+
+      <!-- Carta boca abajo: el JS la muestra cuando termina el hilo -->
+      <div class="carta-hilo">
+        <div class="carta-hilo-int" role="button" tabindex="0" aria-label="Carta boca abajo, púlsala para darle la vuelta">
+          <div class="carta-cara carta-frente">
+            <span class="interrogante">?</span>
+            <small>dale la vuelta</small>
+          </div>
+          <div class="carta-cara carta-dorso">
+            <h3>La leyenda del hilo rojo</h3>
+            <!-- Sergio: personaliza este texto -->
+            <p>Cuenta una leyenda de Asia oriental que los dioses atan un hilo rojo e invisible
+            al dedo de las personas que están destinadas a encontrarse.</p>
+            <p>El hilo puede tensarse, enredarse o estirarse, pero nunca se rompe.</p>
+            <p>No sé si es verdad. Pero si lo es, sé muy bien dónde está el otro extremo del mío.</p>
+          </div>
+        </div>
+      </div>
+
       <div class="zona-continuar">
         <button class="btn continuar" disabled>Continuar</button>
-        <p class="pista-bloqueo">Tira del hilo hasta el final para seguir</p>
+        <p class="pista-bloqueo">Tira del hilo y dale la vuelta a la carta para seguir</p>
       </div>
     </section>
 
-    <!-- ESCENA 10 — Hito 4 con hilo animado decorativo (solo scroll) -->
+    <!-- ESCENA 13 — Hito 4 con hilo animado decorativo (solo scroll) -->
     <section class="escena">
       <span class="date">Hito 4 — pon la fecha aquí</span>
       <h2>Los pequeños momentos</h2>
@@ -217,7 +363,7 @@
       </div>
     </section>
 
-    <!-- ESCENA 11 — Cierre -->
+    <!-- ESCENA 14 — Cierre -->
     <section class="escena">
       <span class="date">Y esto solo es el principio</span>
       <h1 class="marker-title eyebrow-free-title">
@@ -236,21 +382,8 @@
     <a href="galeria.html">Galería</a>
   </nav>
 
-<script src="js/main.js"></script>
-<script src="js/juego.js"></script>
-<script>
-  // Pequeño extra para la escena del hilo arrastrable: revela el texto
-  // de esa escena en concreto cuando se completa el arrastre.
-  document.querySelectorAll('.hilo-arrastrable').forEach((caja) => {
-    const observador = new MutationObserver(() => {
-      if (caja.classList.contains('completo')) {
-        const texto = caja.closest('.escena').querySelector('.resultado-hilo');
-        if (texto) texto.style.opacity = '1';
-      }
-    });
-    observador.observe(caja, { attributes: true, attributeFilter: ['class'] });
-  });
-</script>
-<script src="js/escenas.js"></script>
+<script src="js/main.js?v=4"></script>
+<script src="js/juego.js?v=4"></script>
+<script src="js/escenas.js?v=4"></script>
 </body>
 </html>

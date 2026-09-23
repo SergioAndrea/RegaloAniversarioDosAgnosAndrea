@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Galería</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=4">
 </head>
 <body>
   <div class="starfield" aria-hidden="true"></div>
@@ -31,6 +31,10 @@
         Escribe aquí el mensaje final que quieras dejarle. Este es el cierre de la historia,
         así que puede ser el más sincero de todos.
       </p>
+      <!-- [v4] Del final de la galería pasamos a la carta (el sobre, ahora aquí al final) -->
+      <div class="zona-continuar" style="margin-top:34px;">
+        <a class="btn" href="carta.html">Una última cosa</a>
+      </div>
     </div>
   </div>
 
@@ -46,7 +50,7 @@
     <img id="lightbox-img" src="" alt="">
   </div>
 
-<script src="js/main.js"></script>
+<script src="js/main.js?v=4"></script>
 <script>
   // Al tocar una foto (o su placeholder), la muestra ampliada en el lightbox.
   const lightbox = document.getElementById('lightbox');

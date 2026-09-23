@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Una última cosa</title>
+<link rel="stylesheet" href="css/style.css?v=4">
+<style>
+  /* [v4] Página nueva: el sobre (antes en la portada) ahora va al final de todo. */
+  body{ display:flex; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding: 30px 0 120px; }
+  .escenario{ width: 100%; display:flex; flex-direction:column; align-items:center; padding: 0 20px; }
+
+  /* ---------- Sobre ---------- */
+  .envelope{
+    position: relative;
+    width: min(78vw, 320px);
+    aspect-ratio: 3 / 2;
+    margin: 130px auto 34px;               /* hueco arriba: por ahí sale la hoja */
+    cursor: pointer;
+    perspective: 900px;
+    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.4)) drop-shadow(0 0 1px rgba(255,255,255,0.3));
+    transition: opacity 0.5s ease;
+  }
+  .envelope > div{ position:absolute; }
+  .env-atras{ inset:0; background: var(--bg-soft); border-radius: 6px; z-index:1; }
+  .env-papel{                              /* hoja que asoma al abrir */
+    left: 8%; right: 8%; top: 8%; height: 88%;
+    z-index: 2;
+    background-color: #fbfaf5;
+    background-image:
+      linear-gradient(rgba(70,110,200,0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(70,110,200,0.18) 1px, transparent 1px);
+    background-size: 18px 18px;
+    border-radius: 3px;
+    transition: transform 0.9s ease 0.65s;
+  }
+  .env-frente{                             /* bolsillo delantero (forma de V) */
+    inset:0; z-index:3;
+    background: var(--bg-card);
+    clip-path: polygon(0 0, 50% 55%, 100% 0, 100% 100%, 0 100%);
+    border-radius: 6px;
+  }
+  .env-solapa{
+    top:0; left:0; right:0; height: 58%;
+    z-index: 4;
+    background: #202024;
+    clip-path: polygon(0 0, 100% 0, 50% 100%);
+    transform-origin: top center;
+    transition: transform 0.7s cubic-bezier(.6,0,.3,1), z-index 0s 0.35s;
+  }
+  .env-sello{
+    top: 46%; left: 50%; transform: translate(-50%, -50%);
+    width: 46px; height: 46px; border-radius: 50%;
+    background: var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--bg); font-family: var(--serif); font-weight: 700; font-size: 1.5rem;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+    z-index: 5;
+    transition: opacity 0.2s ease;
+  }
+  /* Estados al abrir */
+  .envelope.open .env-solapa{ transform: rotateX(180deg); z-index: 1; }   /* pasa por detrás de la hoja */
+  .envelope.open .env-sello{ opacity: 0; }
+  .envelope.open .env-papel{ transform: translateY(-62%); }
+  .envelope.fuera{ opacity: 0; pointer-events: none; }
+
+  .hint{ font-size: 0.85rem; color: var(--cream-dim); letter-spacing: 0.02em; transition: opacity 0.3s ease; }
+
+  /* ---------- Carta (aparece cuando el sobre termina de abrirse) ---------- */
+  .carta-hoja{
+    display: none;
+    position: relative;
+    width: min(92vw, 520px);
+    padding: 34px 26px 28px;
+    text-align: left;
+    color: #22349a;                         /* tinta azul de bolígrafo, como la carta del álbum */
+    font-family: var(--marker);
+    font-size: 1rem;
+    line-height: 24px;                      /* = tamaño de la cuadrícula del papel */
+    background-color: #fbfaf5;
+    background-image:
+      linear-gradient(rgba(70,110,200,0.18) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(70,110,200,0.18) 1px, transparent 1px);
+    background-size: 24px 24px;
+    border-radius: 3px;
+    box-shadow: var(--shadow);
+    transform: rotate(-0.6deg);
+  }
+  .carta-hoja.show{ display: block; animation: entradaCarta 0.9s ease; }
+  @keyframes entradaCarta{
+    from{ opacity: 0; transform: translateY(40px) rotate(-0.6deg); }
+    to{   opacity: 1; transform: translateY(0) rotate(-0.6deg); }
+  }
+  .cinta{                                   /* dos trozos de cinta adhesiva */
+    position: absolute; top: -12px; width: 84px; height: 24px;
+    background: rgba(244, 211, 94, 0.55);
+  }
+  .cinta-izq{ left: 18px; transform: rotate(-6deg); }
+  .cinta-der{ right: 18px; transform: rotate(5deg); }
+  .carta-hoja p{ margin: 0 0 24px; }
+  .carta-saludo{ font-family: var(--serif); font-weight: 700; font-size: 1.7rem; line-height: 24px; }
+  .carta-firma{ text-align: right; font-family: var(--serif); font-weight: 700; font-size: 1.6rem; margin: 0; }
+
+  .carta-acciones{ display:none; margin-top: 34px; }
+  .carta-acciones.show{ display:block; animation: entradaEscena 0.6s ease; }
+</style>
+</head>
+<body>
+  <div class="starfield" aria-hidden="true"></div>
+
+  <main class="escenario">
+    <div class="envelope" id="envelope" role="button" tabindex="0" aria-label="Abrir el sobre">
+      <div class="env-atras"></div>
+      <div class="env-papel"></div>
+      <div class="env-frente"></div>
+      <div class="env-solapa"></div>
+      <div class="env-sello">2</div>
+    </div>
+
+    <p class="hint" id="hint">Toca el sobre</p>
+
+    <!-- Sergio: aquí va TU carta. Un <p> por párrafo. Lo que escribas aquí
+         se muestra sobre papel cuadriculado, con letra de bolígrafo. -->
+    <article class="carta-hoja" id="carta">
+      <span class="cinta cinta-izq"></span><span class="cinta cinta-der"></span>
+      <p class="carta-saludo">Hola,</p>
+      <p>Escribe aquí tu carta. Cada párrafo va dentro de su propio párrafo de HTML,
+      como este.</p>
+      <p>Puedes escribir todo lo largo que quieras: la hoja crece sola.</p>
+      <p class="carta-firma">Sergio</p>
+    </article>
+
+    <div class="carta-acciones" id="acciones">
+      <a class="btn btn-ghost" href="index.html">Volver al principio</a>
+    </div>
+  </main>
+
+  <nav class="nav">
+    <a href="index.html">Inicio</a>
+    <a href="historia.html">Historia</a>
+    <a href="galeria.html">Galería</a>
+    <a href="carta.html" class="active">Carta</a>
+  </nav>
+
+<script src="js/main.js?v=4"></script>
+<script>
+  // Secuencia: se abre la solapa -> la hoja sube -> el sobre se desvanece -> aparece la carta completa.
+  const envelope = document.getElementById('envelope');
+  const hint = document.getElementById('hint');
+  const carta = document.getElementById('carta');
+  const acciones = document.getElementById('acciones');
+  const rapido = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  function abrirSobre() {
+    if (envelope.classList.contains('open')) return;
+    envelope.classList.add('open');
+    hint.style.opacity = '0';
+
+    setTimeout(() => envelope.classList.add('fuera'), rapido ? 0 : 2000);      // el sobre se desvanece
+    setTimeout(() => {
+      envelope.style.display = 'none';
+      hint.style.display = 'none';
+      envelope.setAttribute('aria-hidden', 'true');
+      carta.classList.add('show');
+      acciones.classList.add('show');
+    }, rapido ? 0 : 2500);
+  }
+  envelope.addEventListener('click', abrirSobre);
+  envelope.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); abrirSobre(); }
+  });
+</script>
+</body>
+</html>

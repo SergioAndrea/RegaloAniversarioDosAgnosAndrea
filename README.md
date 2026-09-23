@@ -3,15 +3,16 @@
 ## Estructura del proyecto
 ```
 regalo-aniversario/
-├── index.html      → portada (sobre que se abre)
+├── index.html      → portada (un "2" hecho de fotos + "años" + botón para entrar)
 ├── historia.html   → toda la experiencia: hitos + minijuegos, por escenas
-├── galeria.html    → galería final + mensaje de cierre
+├── galeria.html    → galería final + mensaje de cierre (enlaza a la carta)
+├── carta.html      → el sobre que se abre y la carta que escribes tú
 ├── css/style.css   → todos los estilos (colores, tipografía, componentes)
 └── js/
     ├── main.js     → componentes reutilizables (letras de colores, pull-photo,
     │                  corazón, hilo decorativo) + ayudante desbloquearContinuar()
     ├── juego.js    → minijuegos (botón huidizo, memoria, máquina expendedora,
-    │                  hilo para arrastrar)
+    │                  pizarra, deslizador de fotos, calendario, hilo rojo)
     └── escenas.js  → controla qué escena de historia.html se muestra
 ```
 
@@ -25,7 +26,24 @@ una visible a la vez. Cada una tiene un botón "Continuar":
 
 Para añadir un hito nuevo: duplica una escena de scroll y cambia el contenido.
 Para añadir un minijuego nuevo: duplica la escena del componente más parecido
-(máquina, corazón, hilo arrastrable...) y ajústalo.
+(máquina, corazón, hilo rojo...) y ajústalo.
+
+## Componentes nuevos (v4)
+Ninguno usa emojis: todos los iconos son `<svg>` escritos en el propio HTML.
+- **Portada (`index.html`)**: el "2" son 10 recortes de foto. Pon sus URLs de R2 en el
+  array `FOTOS_DOS` del script de `index.html` (una por trozo). `PIEZAS_DOS` define la
+  posición de cada trozo en una cuadrícula de 6 x 10.
+- **Pizarra "¿cuánto es 1 año?"** (`#pizarra`): cada `<li>` lleva `data-num-dos` (dato
+  para 2 años) y, si cambia la unidad, `data-unidad-dos`. El borrador lo anima `initPizarra`.
+- **Deslizador de fotos** (`.tira`): una foto por cada `<figure class="tira-foto">`; añade
+  o quita las que quieras. Se desbloquea al llegar a la última.
+- **Calendario** (`#calendario`): los años y etiquetas ("1 año", "2 años") están en la
+  constante `PASOS` de `initCalendario`; el mes en `MES` (noviembre = 10).
+- **Hilo rojo** (`#hilo-rojo`): el botón dibuja el hilo entre las dos fotos y las desbloquea;
+  luego aparece la carta con "?" que se da la vuelta (texto de la leyenda editable en el HTML).
+- **Carta (`carta.html`)**: escribe tu texto dentro de `<article id="carta">`, un `<p>` por párrafo.
+- Las escenas con el botón "Continuar" deshabilitado (pizarra, deslizador, calendario, hilo)
+  bloquean hasta completarse; si prefieres que no bloqueen, quita el `disabled` de su botón.
 
 
 ## 1. Editar el contenido

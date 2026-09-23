@@ -4,96 +4,128 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Para ti</title>
-<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/style.css?v=4">
 <style>
-  body{ display:flex; align-items:center; justify-content:center; min-height:100vh; text-align:center; }
-  .gift-scene{ position:relative; }
+  /* [v4] Portada: ya no hay sobre. Un "2" hecho de fotos + la palabra "años",
+     como el "1 Año" de la portada del álbum físico. */
+  body{ display:flex; align-items:center; justify-content:center; min-height:100vh; text-align:center; padding: 40px 0; }
+  .portada{ display:flex; flex-direction:column; align-items:center; padding: 0 24px; }
 
-  .envelope{
-    width: min(78vw, 320px);
-    aspect-ratio: 3/2;
-    margin: 0 auto 34px;
+  /* Fila: número + palabra (la palabra queda abajo a la derecha, como en el álbum) */
+  .portada-cabecera{ display:flex; align-items:flex-end; justify-content:center; gap: 14px; margin-bottom: 34px; }
+
+  /* El "2": cuadrícula de 6 x 10 donde cada trozo (foto) ocupa un rectángulo.
+     Las posiciones las pone el JS de abajo (PIEZAS_DOS). */
+  .numero-fotos{
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(10, 1fr);
+    gap: 2px;
+    width: min(44vw, 240px);
+    aspect-ratio: 6 / 10;
+  }
+  .foto-tile{
+    --rot: 0deg;
     position: relative;
-    cursor: pointer;
-    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.4));
+    overflow: hidden;
+    border: 2px solid var(--cream);        /* borde blanco: como un recorte de foto pegado */
+    background: linear-gradient(135deg, hsl(var(--h) 28% 24%), hsl(var(--h) 22% 13%));
+    transform: rotate(var(--rot));
+    box-shadow: 0 4px 10px rgba(0,0,0,0.45);
+    animation: aparecerTile 0.55s ease backwards;
+    animation-delay: calc(var(--i) * 90ms + 250ms);    /* van apareciendo una a una */
   }
-  .envelope .body{
-    position:absolute; inset:0;
-    background: var(--bg-card);
-    border: 1px solid var(--line);
-    border-radius: 6px;
-  }
-  .envelope .flap{
-    position:absolute; top:0; left:0; right:0;
-    height: 62%;
-    background: var(--bg-soft);
-    clip-path: polygon(0 0, 100% 0, 50% 78%);
-    border-radius: 6px 6px 0 0;
-    transform-origin: top center;
-    transition: transform 0.7s cubic-bezier(.6,0,.3,1);
-    border: 1px solid var(--line);
-    border-bottom: none;
-  }
-  .envelope .seal{
-    position:absolute; top: 44%; left:50%; transform: translate(-50%,-50%);
-    width: 46px; height:46px; border-radius:50%;
-    background: var(--gold);
-    display:flex; align-items:center; justify-content:center;
-    color: var(--bg); font-family: var(--serif); font-style:italic; font-size:1.1rem;
-    box-shadow: 0 6px 14px rgba(0,0,0,0.35);
-    z-index: 3;
-  }
-  .envelope.open .flap{ transform: rotateX(180deg); }
-  .envelope.open .seal{ opacity:0; transition: opacity 0.2s ease; }
-
-  .hint{
-    font-size: 0.85rem;
-    color: var(--cream-dim);
-    letter-spacing: 0.02em;
+  .foto-tile img{ display:block; width:100%; height:100%; object-fit:cover; }
+  @keyframes aparecerTile{
+    from{ opacity:0; transform: scale(0.6) rotate(calc(var(--rot) - 14deg)); }
+    to{   opacity:1; transform: scale(1) rotate(var(--rot)); }
   }
 
-  .reveal{
-    opacity:0; transform: translateY(14px);
-    transition: opacity 0.6s ease, transform 0.6s ease;
-    pointer-events:none;
+  /* "años" a mano en amarillo con dos rayas debajo (como "Año" en el álbum) */
+  .portada-anos{
+    position: relative;
+    margin: 0;
+    padding-bottom: 24px;
+    font-family: var(--marker);
+    font-weight: 700;
+    font-size: clamp(2.4rem, 11vw, 4.6rem);
+    line-height: 1;
+    color: var(--c1);
   }
-  .reveal.show{ opacity:1; transform:none; pointer-events:auto; }
+  .portada-anos::before,
+  .portada-anos::after{
+    content: '';
+    position: absolute;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--c1);
+  }
+  .portada-anos::before{ bottom: 10px; left: 14%; right: -4%; }
+  .portada-anos::after{  bottom: 0;    left: -6%; right: -10%; }
+
+  .portada .lead{ margin: 0 auto 28px; }
 </style>
 </head>
 <body>
   <div class="starfield" aria-hidden="true"></div>
 
-  <div class="gift-scene">
-    <div class="envelope" id="envelope">
-      <div class="flap"></div>
-      <div class="seal">2</div>
-      <div class="body"></div>
+  <main class="portada">
+    <div class="portada-cabecera">
+      <div class="numero-fotos" id="numero-dos" role="img" aria-label="El número 2, hecho con fotos nuestras"></div>
+      <p class="portada-anos">años</p>
     </div>
 
-    <p class="hint" id="hint">Toca el sobre</p>
+    <p class="lead">
+      <!-- Sergio: cambia este texto por algo vuestro -->
+      Esto no es una tarjeta normal. Es un pequeño mundo que he construido
+      para contarte nuestra historia a mi manera. Cuando quieras, empezamos.
+    </p>
+    <a class="btn" href="historia.html">Empezar la historia</a>
+  </main>
 
-    <div class="reveal" id="content">
-      <h1 class="eyebrow-free-title"><span class="sticker-word" data-text="DOS AÑOS"></span></h1>
-      <p class="lead" style="margin:0 auto 28px;">
-        <!-- Sergio: cambia este texto por algo vuestro -->
-        Esto no es una tarjeta normal. Es un pequeño mundo que he construido
-        para contarte nuestra historia a mi manera. Cuando quieras, empezamos.
-      </p>
-      <a class="btn" href="historia.html">Empezar la historia</a>
-    </div>
-  </div>
-
-<script src="js/main.js"></script>
+<script src="js/main.js?v=4"></script>
 <script>
-  const envelope = document.getElementById('envelope');
-  const hint = document.getElementById('hint');
-  const content = document.getElementById('content');
-  envelope.addEventListener('click', () => {
-    if (envelope.classList.contains('open')) return;
-    envelope.classList.add('open');
-    hint.style.opacity = '0';
-    setTimeout(() => content.classList.add('show'), 500);
-  });
+  // ---------------------------------------------------------------
+  // El "2" de fotos.
+  // Sergio: pon aquí las URLs de R2 de las fotos que forman el número
+  // (una por trozo, 10 en total). Si falta alguna, ese trozo se ve como
+  // un recorte de color hasta que la pongas.
+  // ---------------------------------------------------------------
+  const FOTOS_DOS = [
+    // 'https://pub-xxxxxxxx.r2.dev/foto01.jpg',
+    // 'https://pub-xxxxxxxx.r2.dev/foto02.jpg',
+  ];
+
+  // Trozos del número: [columna, fila, ancho, alto] sobre la cuadrícula de 6 x 10
+  // (barra superior, palo derecho, barra central, palo izquierdo, barra inferior).
+  const PIEZAS_DOS = [
+    [1, 1, 2, 2], [3, 1, 2, 2], [5, 1, 2, 2],   // barra superior
+    [5, 3, 2, 2],                               // palo derecho
+    [1, 5, 3, 2], [4, 5, 3, 2],                 // barra central
+    [1, 7, 2, 2],                               // palo izquierdo
+    [1, 9, 2, 2], [3, 9, 2, 2], [5, 9, 2, 2]    // barra inferior
+  ];
+
+  (function pintarNumeroDos() {
+    const cont = document.getElementById('numero-dos');
+    const tonos = [20, 200, 340, 45, 160, 260, 10, 190, 320, 80];   // tono de cada recorte-placeholder
+    PIEZAS_DOS.forEach(([col, fila, ancho, alto], i) => {
+      const tile = document.createElement('div');
+      tile.className = 'foto-tile';
+      tile.style.gridColumn = col + ' / span ' + ancho;
+      tile.style.gridRow = fila + ' / span ' + alto;
+      tile.style.setProperty('--i', i);
+      tile.style.setProperty('--h', tonos[i % tonos.length]);
+      tile.style.setProperty('--rot', ((i % 2 ? 1 : -1) * (0.6 + (i * 0.37) % 1.4)).toFixed(1) + 'deg');
+      if (FOTOS_DOS[i]) {
+        const img = document.createElement('img');
+        img.src = FOTOS_DOS[i];
+        img.alt = '';
+        tile.appendChild(img);
+      }
+      cont.appendChild(tile);
+    });
+  })();
 </script>
 </body>
 </html>
