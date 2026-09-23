@@ -298,6 +298,106 @@ a{ color: inherit; }
   stroke-linecap: round;
 }
 
+/* --- Máquina expendedora ---
+   Uso: ver ejemplo en historia.html (initMaquina en juego.js) */
+.maquina{
+  max-width: 240px;
+  margin: 22px auto 0;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  padding: 18px;
+  text-align: center;
+}
+.maquina .ventana{
+  height: 120px;
+  border: 1px dashed var(--line);
+  border-radius: 6px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  background: var(--bg-soft);
+}
+.maquina .producto{
+  width: 60px;
+  height: 60px;
+  border-radius: 6px;
+  background: var(--c4);
+  position: absolute;
+  top: -90px;
+  display: flex; align-items:center; justify-content:center;
+  font-size: 1.4rem;
+  transition: top 0.8s cubic-bezier(.34,1.56,.64,1);
+}
+.maquina.activada .producto{ top: 14px; }
+.maquina .resultado{
+  opacity: 0; max-height: 0; overflow: hidden;
+  transition: opacity 0.5s ease;
+  margin-top: 0;
+}
+.maquina .resultado.show{ opacity: 1; max-height: 900px; margin-top: 14px; }
+.maquina .resultado .polaroid{ width: 100%; max-width: 200px; margin: 0 auto 10px; }
+
+/* --- Hilo para arrastrar (interruptor de cordón) ---
+   Uso: ver ejemplo en historia.html (initHiloArrastrable en juego.js) */
+.hilo-arrastrable{
+  position: relative;
+  height: 210px;
+  max-width: 240px;
+  margin: 26px auto 0;
+}
+.hilo-arrastrable .carril{
+  position: absolute; left: 50%; top: 8px; bottom: 8px;
+  width: 2px; background: var(--line); transform: translateX(-50%);
+}
+.hilo-arrastrable .asa{
+  position: absolute; left: 50%; top: 8px;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--c3);
+  transform: translate(-50%, 0);
+  cursor: grab;
+  touch-action: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 1.1rem;
+  box-shadow: var(--shadow);
+}
+.hilo-arrastrable .meta{
+  position: absolute; left: 50%; bottom: 8px; transform: translateX(-50%);
+  font-family: var(--marker); color: var(--cream-dim); font-size: 0.78rem;
+}
+.hilo-arrastrable .resultado{
+  text-align: center; opacity: 0; transition: opacity 0.5s ease;
+  margin-top: 10px; font-family: var(--serif); color: var(--c1); font-size: 1.3rem;
+}
+.hilo-arrastrable.completo .resultado{ opacity: 1; }
+
+/* --- Escenas de historia.html: una visible a la vez --- */
+.escena{ display: none; }
+.escena.activa{ display: block; animation: entradaEscena 0.5s ease; }
+@keyframes entradaEscena{
+  from{ opacity: 0; transform: translateY(16px); }
+  to{ opacity: 1; transform: none; }
+}
+.escena-contador{
+  position: fixed; top: 18px; left: 50%; transform: translateX(-50%);
+  font-family: var(--marker); font-size: 0.78rem; color: var(--cream-dim);
+  background: rgba(10,10,11,0.7); border: 1px solid var(--line);
+  padding: 5px 14px; border-radius: 999px; z-index: 40;
+}
+.continuar[disabled]{
+  opacity: 0.35;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+.zona-continuar{ text-align: center; margin-top: 30px; }
+.pista-bloqueo{
+  text-align: center; font-size: 0.82rem; color: var(--cream-dim);
+  font-family: var(--marker); margin-top: 8px;
+}
+
 /* ---------- Juegos ---------- */
 .zona-juego{
   position: relative;

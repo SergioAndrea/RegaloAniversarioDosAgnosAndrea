@@ -4,19 +4,33 @@
 ```
 regalo-aniversario/
 ├── index.html      → portada (sobre que se abre)
-├── historia.html   → línea de tiempo de capítulos/hitos
-├── juegos.html     → mini-juegos (botón huidizo + memoria)
-├── galeria.html     → galería final + mensaje de cierre
+├── historia.html   → toda la experiencia: hitos + minijuegos, por escenas
+├── galeria.html    → galería final + mensaje de cierre
 ├── css/style.css   → todos los estilos (colores, tipografía, componentes)
 └── js/
-    ├── main.js     → navegación activa + fundido de entrada
-    └── juego.js    → lógica de los dos mini-juegos
+    ├── main.js     → componentes reutilizables (letras de colores, pull-photo,
+    │                  corazón, hilo decorativo) + ayudante desbloquearContinuar()
+    ├── juego.js    → minijuegos (botón huidizo, memoria, máquina expendedora,
+    │                  hilo para arrastrar)
+    └── escenas.js  → controla qué escena de historia.html se muestra
 ```
 
+## Cómo funciona historia.html
+Todo `historia.html` es una secuencia de pantallas (`<section class="escena">`), solo
+una visible a la vez. Cada una tiene un botón "Continuar":
+- Si el botón **no** lleva `disabled` en el HTML, se puede pasar sin más (escena de
+  lectura/scroll).
+- Si lleva `disabled`, es una escena de minijuego: el propio juego llama a
+  `desbloquearContinuar()` cuando se gana, y el botón se habilita solo.
+
+Para añadir un hito nuevo: duplica una escena de scroll y cambia el contenido.
+Para añadir un minijuego nuevo: duplica la escena del componente más parecido
+(máquina, corazón, hilo arrastrable...) y ajústalo.
+
+
 ## 1. Editar el contenido
-- **historia.html**: duplica el bloque `<section class="chapter">` por cada hito. Cambia fecha, título y texto.
+- **historia.html**: cada hito y cada minijuego es una `<section class="escena">`. Duplica la que más se parezca a lo que quieras añadir.
 - **galeria.html** y los `.polaroid` de `historia.html`: sustituye `<div class="ph-placeholder">...</div>` por `<img src="URL-DE-R2" alt="...">` cuando tengas las fotos subidas.
-- **juegos.html**: cambia la pregunta del primer juego si quieres, o los textos finales.
 - Todo el texto marcado como "texto de ejemplo" o con un comentario `<!-- Sergio: ... -->` está pensado para que lo edites.
 
 ## 2. Subir fotos/vídeos a Cloudflare R2

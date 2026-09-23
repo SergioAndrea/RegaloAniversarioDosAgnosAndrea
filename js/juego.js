@@ -1,10 +1,8 @@
 /* =========================================================
-   juego.js — lógica de los mini-juegos de juegos.html
+   juego.js — lógica de todos los minijuegos usados en historia.html
    ========================================================= */
 
-/* ---------- JUEGO 1: el botón "No" que huye ---------- */
-// Cada vez que el cursor/dedo se acerca al botón "No", lo movemos
-// a una posición aleatoria dentro de su contenedor.
+/* ---------- JUEGO: el botón "No" que huye ---------- */
 function initBotonHuidizo() {
   const zona = document.getElementById('zona-boton');
   const btnNo = document.getElementById('btn-no');
@@ -34,7 +32,6 @@ function initBotonHuidizo() {
     }
   }
 
-  // Escritorio: huye al pasar el ratón cerca. Móvil: huye al tocar.
   btnNo.addEventListener('mouseenter', moverBoton);
   btnNo.addEventListener('touchstart', (e) => { e.preventDefault(); moverBoton(); }, { passive: false });
 
@@ -42,11 +39,11 @@ function initBotonHuidizo() {
     mensaje.textContent = 'Sabía que dirías que sí ❤';
     btnNo.style.display = 'none';
     btnSi.disabled = true;
+    desbloquearContinuar(btnSi);
   });
 }
 
-/* ---------- JUEGO 2: memoria (encuentra las parejas) ---------- */
-// 8 cartas = 4 parejas. Sustituye las etiquetas por fotos reales (R2) cuando las tengas.
+/* ---------- JUEGO: memoria (encuentra las parejas) ---------- */
 function initMemoria() {
   const tablero = document.getElementById('tablero-memoria');
   if (!tablero) return;
@@ -92,6 +89,7 @@ function initMemoria() {
       if (parejasEncontradas === totalParejas) {
         const final = document.getElementById('memoria-final');
         if (final) final.classList.add('show');
+        desbloquearContinuar(tablero);
       }
     } else {
       bloqueado = true;
@@ -105,7 +103,89 @@ function initMemoria() {
   }
 }
 
+/* ---------- JUEGO: máquina expendedora ---------- */
+// Pulsar el botón activa la animación; al terminar se revela el
+// contenido de dentro de .resultado (duplica el bloque en el HTML
+// para poner tu propia tira de fotos, mensaje, etc.)
+function initMaquina() {
+  document.querySelectorAll('.maquina').forEach((maquina) => {
+    const boton = maquina.querySelector('.btn');
+    const resultado = maquina.querySelector('.resultado');
+    if (!boton) return;
+    boton.addEventListener('click', () => {
+      if (maquina.classList.contains('activada')) return;
+      maquina.classList.add('activada');
+      boton.disabled = true;
+      setTimeout(() => {
+        if (resultado) resultado.classList.add('show');
+        desbloquearContinuar(maquina);
+      }, 850); // coincide con la duración de la transición del "producto" en CSS
+    });
+  });
+}
+
+/* ---------- JUEGO: hilo para arrastrar (interruptor de cordón) ---------- */
+// El usuario tiene que arrastrar el "asa" desde arriba hasta abajo del
+// carril para revelar el mensaje. Funciona con ratón y con dedo.
+function initHiloArrastrable() {
+  document.querySelectorAll('.hilo-arrastrable').forEach((caja) => {
+    const asa = caja.querySelector('.asa');
+    if (!asa) return;
+    const margen = 8;
+    let arrastrando = false;
+
+    function limites() {
+      return { min: margen, max: caja.clientHeight - asa.offsetHeight - margen };
+    }
+
+    function posicionar(y) {
+      const { min, max } = limites();
+      const clamped = Math.min(max, Math.max(min, y));
+      asa.style.top = clamped + 'px';
+      return clamped >= max - 4;
+    }
+
+    function coordenadaY(evento) {
+      const rect = caja.getBoundingClientRect();
+      const clientY = evento.touches ? evento.touches[0].clientY : evento.clientY;
+      return clientY - rect.top - asa.offsetHeight / 2;
+    }
+
+    function empezar() {
+      arrastrando = true;
+      asa.style.cursor = 'grabbing';
+    }
+    function mover(e) {
+      if (!arrastrando) return;
+      e.preventDefault();
+      posicionar(coordenadaY(e));
+    }
+    function soltar() {
+      if (!arrastrando) return;
+      arrastrando = false;
+      asa.style.cursor = 'grab';
+      const { max } = limites();
+      const actual = parseFloat(asa.style.top || '8');
+      if (actual >= max - 4) {
+        caja.classList.add('completo');
+        desbloquearContinuar(caja);
+      } else {
+        posicionar(margen); // no llegó abajo del todo: vuelve arriba
+      }
+    }
+
+    asa.addEventListener('mousedown', empezar);
+    asa.addEventListener('touchstart', empezar, { passive: true });
+    window.addEventListener('mousemove', mover);
+    window.addEventListener('touchmove', mover, { passive: false });
+    window.addEventListener('mouseup', soltar);
+    window.addEventListener('touchend', soltar);
+  });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initBotonHuidizo();
   initMemoria();
+  initMaquina();
+  initHiloArrastrable();
 });

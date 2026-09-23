@@ -93,6 +93,7 @@ function initCorazonPuzzle() {
             if (progreso) progreso.textContent = celdasLlenas + ' / ' + totalCeldas;
             if (celdasLlenas === totalCeldas && mensaje) {
               mensaje.classList.add('show');
+              desbloquearContinuar(grid);
             }
           });
         } else {
@@ -134,3 +135,14 @@ document.addEventListener('DOMContentLoaded', () => {
   initCorazonPuzzle();
   initHilo();
 });
+
+/* --- Ayudante compartido: desbloquea el botón "Continuar" de la escena
+   a la que pertenece un elemento, cuando se completa un minijuego. --- */
+function desbloquearContinuar(elementoDentroDeEscena) {
+  const escena = elementoDentroDeEscena.closest('.escena');
+  if (!escena) return;
+  const boton = escena.querySelector('.continuar');
+  if (boton) boton.removeAttribute('disabled');
+  const pista = escena.querySelector('.pista-bloqueo');
+  if (pista) pista.style.display = 'none';
+}
