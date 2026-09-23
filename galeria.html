@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Galería</title>
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <div class="starfield" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <h1 class="eyebrow-free-title">Todo esto, en fotos</h1>
+    <p class="lead">Toca cualquier foto para verla más grande.</p>
+
+    <!-- Sergio: cada .polaroid es una foto. Sustituye el div .ph-placeholder por
+         <img src="URL-DE-R2" alt="descripción"> cuando tengas las fotos subidas. -->
+    <div class="grid-galeria" id="grid-galeria">
+      <figure class="polaroid"><div class="ph-placeholder" data-full="">foto 1</div></figure>
+      <figure class="polaroid"><div class="ph-placeholder" data-full="">foto 2</div></figure>
+      <figure class="polaroid"><div class="ph-placeholder" data-full="">foto 3</div></figure>
+      <figure class="polaroid"><div class="ph-placeholder" data-full="">foto 4</div></figure>
+      <figure class="polaroid"><div class="ph-placeholder" data-full="">foto 5</div></figure>
+      <figure class="polaroid"><div class="ph-placeholder" data-full="">foto 6</div></figure>
+    </div>
+
+    <div style="text-align:center; margin-top:80px;">
+      <!-- Sergio: este es el mensaje final, el broche de la web -->
+      <h2>Gracias por estos dos años</h2>
+      <p class="lead" style="margin:0 auto 10px;">
+        Escribe aquí el mensaje final que quieras dejarle. Este es el cierre de la historia,
+        así que puede ser el más sincero de todos.
+      </p>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a href="index.html">Inicio</a>
+    <a href="historia.html">Historia</a>
+    <a href="juegos.html">Juegos</a>
+    <a href="galeria.html" class="active">Galería</a>
+  </nav>
+
+  <!-- Visor ampliado -->
+  <div class="lightbox" id="lightbox">
+    <button class="cerrar" id="cerrar-lightbox" aria-label="Cerrar">&times;</button>
+    <img id="lightbox-img" src="" alt="">
+  </div>
+
+<script src="js/main.js"></script>
+<script>
+  // Al tocar una foto (o su placeholder), la muestra ampliada en el lightbox.
+  const lightbox = document.getElementById('lightbox');
+  const lightboxImg = document.getElementById('lightbox-img');
+  const cerrar = document.getElementById('cerrar-lightbox');
+
+  document.querySelectorAll('#grid-galeria .polaroid').forEach((fig) => {
+    fig.addEventListener('click', () => {
+      const img = fig.querySelector('img');
+      const src = img ? img.src : fig.querySelector('.ph-placeholder').dataset.full;
+      if (!src) return; // sin foto real todavía, no abre el visor
+      lightboxImg.src = src;
+      lightbox.classList.add('show');
+    });
+  });
+  cerrar.addEventListener('click', () => lightbox.classList.remove('show'));
+  lightbox.addEventListener('click', (e) => { if (e.target === lightbox) lightbox.classList.remove('show'); });
+</script>
+</body>
+</html>

@@ -1,0 +1,414 @@
+/* =========================================================
+   Regalo de aniversario — hoja de estilos compartida
+   Paleta: noche cálida de recuerdos (ciruela oscuro + oro + rosa)
+   ========================================================= */
+
+@import url('https://fonts.googleapis.com/css2?family=Kalam:wght@400;700&family=Caveat:wght@600;700&family=Work+Sans:wght@400;500;600&display=swap');
+
+:root{
+  --bg: #0a0a0b;
+  --bg-soft: #141416;
+  --bg-card: #1a1a1d;
+  --line: rgba(255, 255, 255, 0.10);
+  --gold: #d3a95b;
+  --gold-soft: #e8c98a;
+  --rose: #e3a5ab;
+  --cream: #f4ece0;
+  --cream-dim: rgba(244, 236, 224, 0.62);
+  --shadow: 0 18px 40px rgba(0,0,0,0.5);
+  --radius: 6px;
+  --serif: 'Caveat', cursive;
+  --sans: 'Work Sans', system-ui, sans-serif;
+  --marker: 'Kalam', cursive;
+
+  /* Paleta "scrapbook" — colores de rotulador para letras y stickers */
+  --c1: #f4d35e; /* amarillo */
+  --c2: #4ecdc4; /* turquesa */
+  --c3: #ff6b9d; /* rosa */
+  --c4: #ff8c42; /* naranja */
+  --c5: #95e1b3; /* verde menta */
+  --c6: #f4ece0; /* blanco roto */
+}
+
+*{ box-sizing: border-box; }
+html{ scroll-behavior: smooth; }
+body{
+  margin:0;
+  background: var(--bg);
+  color: var(--cream);
+  font-family: var(--sans);
+  line-height: 1.6;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+/* Fondo de estrellas sutil, reutilizable */
+.starfield{
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  background-image:
+    radial-gradient(1px 1px at 20% 30%, rgba(244,236,224,0.5), transparent),
+    radial-gradient(1px 1px at 65% 15%, rgba(244,236,224,0.35), transparent),
+    radial-gradient(1.5px 1.5px at 80% 60%, rgba(211,169,91,0.5), transparent),
+    radial-gradient(1px 1px at 40% 80%, rgba(244,236,224,0.4), transparent),
+    radial-gradient(1px 1px at 90% 85%, rgba(244,236,224,0.3), transparent),
+    radial-gradient(1.5px 1.5px at 10% 65%, rgba(227,165,171,0.4), transparent);
+  background-repeat: repeat;
+  background-size: 480px 480px;
+  opacity: 0.9;
+}
+
+h1, h2, h3{
+  font-family: var(--serif);
+  font-weight: 600;
+  margin: 0 0 0.4em;
+  letter-spacing: 0.01em;
+}
+
+p{ margin: 0 0 1em; }
+
+a{ color: inherit; }
+
+/* Navegación mínima, fija abajo */
+.nav{
+  position: fixed;
+  left: 50%;
+  bottom: 22px;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+  background: rgba(23, 16, 31, 0.75);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 6px;
+  backdrop-filter: blur(8px);
+  z-index: 50;
+}
+.nav a{
+  font-family: var(--sans);
+  font-size: 0.82rem;
+  text-decoration: none;
+  color: var(--cream-dim);
+  padding: 8px 16px;
+  border-radius: 999px;
+  transition: color 0.25s ease, background 0.25s ease;
+}
+.nav a:hover, .nav a.active{
+  color: var(--bg);
+  background: var(--gold-soft);
+}
+
+/* Contenedor general */
+.wrap{
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 100px 24px 140px;
+}
+
+.eyebrow-free-title{
+  font-size: clamp(2rem, 6vw, 3.2rem);
+  color: var(--cream);
+}
+
+.lead{
+  font-size: 1.05rem;
+  color: var(--cream-dim);
+  max-width: 46ch;
+}
+
+/* Botones */
+.btn{
+  font-family: var(--sans);
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--bg);
+  background: var(--gold-soft);
+  border: none;
+  border-radius: var(--radius);
+  padding: 14px 30px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  box-shadow: var(--shadow);
+}
+.btn:hover{ transform: translateY(-2px); }
+.btn:focus-visible{ outline: 2px solid var(--rose); outline-offset: 3px; }
+
+.btn-ghost{
+  background: transparent;
+  color: var(--cream);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+/* Polaroid para fotos */
+.polaroid{
+  background: var(--cream);
+  padding: 10px 10px 34px;
+  border-radius: 2px;
+  box-shadow: var(--shadow);
+  display: inline-block;
+}
+.polaroid img,
+.polaroid .ph-placeholder{
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-soft));
+  border: 1px dashed rgba(23,16,31,0.25);
+}
+.polaroid .ph-placeholder{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: rgba(23,16,31,0.55);
+  font-family: var(--sans);
+  font-size: 0.8rem;
+  text-align: center;
+  padding: 8px;
+}
+.polaroid figcaption{
+  color: #17101f;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 0.9rem;
+  text-align: center;
+  padding-top: 10px;
+}
+
+/* =========================================================
+   Componentes estilo scrapbook
+   ========================================================= */
+
+/* --- Letras de colores tipo pegatina de nevera ---
+   Uso: <span class="sticker-word" data-text="FELIZ"></span>
+   El JS (main.js -> initStickerWords) reparte una letra por
+   bloque de color, rotación aleatoria y tipografía alterna. */
+.sticker-word{
+  display: inline-flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  vertical-align: middle;
+}
+.sticker-letter{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.6em;
+  padding: 4px 8px;
+  font-weight: 700;
+  border-radius: 5px;
+  color: #14100a;
+  box-shadow: 0 3px 0 rgba(0,0,0,0.4);
+  line-height: 1;
+  font-size: 1em;
+}
+
+/* Título manuscrito multicolor: envuelve cada palabra en un <span class="c1">…</span>
+   alternando c1..c6 para que cada palabra tenga un color distinto. */
+.marker-title{ font-family: var(--serif); font-weight: 700; line-height: 1.15; }
+.marker-title .c1{ color: var(--c1); }
+.marker-title .c2{ color: var(--c2); }
+.marker-title .c3{ color: var(--c3); }
+.marker-title .c4{ color: var(--c4); }
+.marker-title .c5{ color: var(--c5); }
+.marker-title .c6{ color: var(--c6); }
+
+/* --- Tira de fotos "tira hacia abajo" (fotomatón) ---
+   Uso: ver ejemplo comentado en historia.html */
+.pull-photo{
+  border: 1px dashed var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  background: var(--bg-card);
+  text-align: center;
+}
+.pull-photo .pull-tab{
+  font-family: var(--marker);
+  color: var(--c1);
+  background: none;
+  border: none;
+  font-size: 1.05rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.pull-photo .pull-tab .flecha{
+  display:inline-block;
+  transition: transform 0.4s ease;
+}
+.pull-photo.open .pull-tab .flecha{ transform: rotate(180deg); }
+.pull-photo .strip{
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.6s ease;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 0;
+}
+.pull-photo.open .strip{ max-height: 900px; margin-top: 14px; }
+.strip .polaroid{ width: 100%; max-width: 220px; margin: 0 auto; }
+
+/* --- Corazón para completar (grid en forma de corazón) ---
+   Uso: ver ejemplo comentado en historia.html. El JS (initCorazonPuzzle)
+   construye la cuadrícula a partir del patrón definido ahí mismo. */
+.corazon-puzzle{
+  display: grid;
+  grid-template-columns: repeat(7, 26px);
+  grid-auto-rows: 26px;
+  gap: 4px;
+  justify-content: center;
+  margin: 24px auto;
+}
+.corazon-celda{
+  border-radius: 4px;
+  cursor: pointer;
+  transition: background 0.25s ease, transform 0.15s ease;
+}
+.corazon-celda.hueco{ visibility: hidden; cursor: default; }
+.corazon-celda.vacia{ background: var(--bg-soft); border: 1px solid var(--line); }
+.corazon-celda.llena{ background: var(--c3); transform: scale(1.05); }
+.corazon-progreso{
+  text-align: center;
+  font-family: var(--marker);
+  color: var(--cream-dim);
+  font-size: 0.9rem;
+}
+.corazon-mensaje{
+  text-align: center;
+  opacity: 0; max-height: 0; overflow: hidden;
+  transition: opacity 0.5s ease;
+  font-family: var(--serif);
+  font-size: 1.4rem;
+  color: var(--c3);
+}
+.corazon-mensaje.show{ opacity: 1; max-height: 200px; margin-top: 10px; }
+
+/* --- Hilo animado que conecta dos elementos ---
+   Uso: ver ejemplo comentado en historia.html. El SVG se "dibuja"
+   solo al hacer scroll hasta él (initHilo en main.js). */
+.hilo-zona{ position: relative; margin: 40px 0; }
+.hilo-svg path{
+  fill: none;
+  stroke: var(--c3);
+  stroke-width: 2.5;
+  stroke-linecap: round;
+}
+
+/* ---------- Juegos ---------- */
+.zona-juego{
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 28px;
+  margin-bottom: 60px;
+}
+.zona-boton{
+  position: relative;
+  height: 180px;
+  margin-top: 22px;
+}
+.zona-boton .btn{
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+}
+#btn-no{ transition: left 0.25s ease, top 0.25s ease; }
+#btn-si{ position: static; transform:none; display:inline-block; margin-right: 100px; }
+
+/* Tablero de memoria: grid que se adapta al ancho disponible */
+.tablero-memoria{
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  margin-top: 22px;
+  perspective: 800px;
+}
+.carta-memoria{
+  aspect-ratio: 1;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: transparent;
+  cursor: pointer;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.5s ease;
+}
+.carta-memoria .cara{
+  position: absolute; inset:0;
+  display:flex; align-items:center; justify-content:center;
+  border-radius: 6px;
+  backface-visibility: hidden;
+  font-family: var(--serif);
+  font-size: 1.3rem;
+}
+.cara-atras{ background: var(--bg-soft); color: var(--gold-soft); }
+.cara-frente{ background: var(--gold-soft); color: var(--bg); transform: rotateY(180deg); }
+.carta-memoria.volteada,
+.carta-memoria.encontrada{ transform: rotateY(180deg); }
+.carta-memoria.encontrada .cara-frente{ background: var(--rose); }
+
+.memoria-final{
+  opacity:0; max-height:0; overflow:hidden;
+  transition: opacity 0.5s ease;
+  margin-top: 18px;
+}
+.memoria-final.show{ opacity:1; max-height:200px; }
+
+/* ---------- Galería ---------- */
+.grid-galeria{
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+  margin-top: 30px;
+}
+.grid-galeria .polaroid{ width: 100%; }
+.grid-galeria .polaroid img,
+.grid-galeria .polaroid .ph-placeholder{ cursor: pointer; }
+
+.lightbox{
+  position: fixed; inset:0;
+  background: rgba(10,6,14,0.9);
+  display:flex; align-items:center; justify-content:center;
+  padding: 24px;
+  z-index: 100;
+  opacity:0; pointer-events:none;
+  transition: opacity 0.3s ease;
+}
+.lightbox.show{ opacity:1; pointer-events:auto; }
+.lightbox img{ max-width: 100%; max-height: 85vh; border-radius: 4px; }
+.lightbox .cerrar{
+  position:absolute; top:20px; right:24px;
+  background:none; border:none; color: var(--cream);
+  font-size: 1.6rem; cursor:pointer;
+}
+
+/* =========================================================
+   Responsive — móvil primero para lo esencial
+   ========================================================= */
+@media (max-width: 640px){
+  .wrap{ padding: 80px 18px 130px; }
+  .nav{ bottom: 14px; gap: 2px; padding: 5px; }
+  .nav a{ padding: 7px 11px; font-size: 0.75rem; }
+
+  .chapter .photos .polaroid{ width: 130px; }
+
+  .grid-galeria{ grid-template-columns: repeat(2, 1fr); gap: 12px; }
+
+  .tablero-memoria{ grid-template-columns: repeat(4, 1fr); gap: 7px; }
+
+  #btn-si{ margin-right: 0; display:block; margin-bottom: 14px; }
+  .zona-boton{ height: 150px; }
+}
+
+@media (min-width: 900px){
+  .grid-galeria{ grid-template-columns: repeat(4, 1fr); }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ animation-duration: 0.001ms !important; transition-duration: 0.001ms !important; }
+}

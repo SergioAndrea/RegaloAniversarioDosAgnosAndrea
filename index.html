@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Para ti</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  body{ display:flex; align-items:center; justify-content:center; min-height:100vh; text-align:center; }
+  .gift-scene{ position:relative; }
+
+  .envelope{
+    width: min(78vw, 320px);
+    aspect-ratio: 3/2;
+    margin: 0 auto 34px;
+    position: relative;
+    cursor: pointer;
+    filter: drop-shadow(0 20px 30px rgba(0,0,0,0.4));
+  }
+  .envelope .body{
+    position:absolute; inset:0;
+    background: var(--bg-card);
+    border: 1px solid var(--line);
+    border-radius: 6px;
+  }
+  .envelope .flap{
+    position:absolute; top:0; left:0; right:0;
+    height: 62%;
+    background: var(--bg-soft);
+    clip-path: polygon(0 0, 100% 0, 50% 78%);
+    border-radius: 6px 6px 0 0;
+    transform-origin: top center;
+    transition: transform 0.7s cubic-bezier(.6,0,.3,1);
+    border: 1px solid var(--line);
+    border-bottom: none;
+  }
+  .envelope .seal{
+    position:absolute; top: 44%; left:50%; transform: translate(-50%,-50%);
+    width: 46px; height:46px; border-radius:50%;
+    background: var(--gold);
+    display:flex; align-items:center; justify-content:center;
+    color: var(--bg); font-family: var(--serif); font-style:italic; font-size:1.1rem;
+    box-shadow: 0 6px 14px rgba(0,0,0,0.35);
+    z-index: 3;
+  }
+  .envelope.open .flap{ transform: rotateX(180deg); }
+  .envelope.open .seal{ opacity:0; transition: opacity 0.2s ease; }
+
+  .hint{
+    font-size: 0.85rem;
+    color: var(--cream-dim);
+    letter-spacing: 0.02em;
+  }
+
+  .reveal{
+    opacity:0; transform: translateY(14px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+    pointer-events:none;
+  }
+  .reveal.show{ opacity:1; transform:none; pointer-events:auto; }
+</style>
+</head>
+<body>
+  <div class="starfield" aria-hidden="true"></div>
+
+  <div class="gift-scene">
+    <div class="envelope" id="envelope">
+      <div class="flap"></div>
+      <div class="seal">2</div>
+      <div class="body"></div>
+    </div>
+
+    <p class="hint" id="hint">Toca el sobre</p>
+
+    <div class="reveal" id="content">
+      <h1 class="eyebrow-free-title"><span class="sticker-word" data-text="DOS AÑOS"></span></h1>
+      <p class="lead" style="margin:0 auto 28px;">
+        <!-- Sergio: cambia este texto por algo vuestro -->
+        Esto no es una tarjeta normal. Es un pequeño mundo que he construido
+        para contarte nuestra historia a mi manera. Cuando quieras, empezamos.
+      </p>
+      <a class="btn" href="historia.html">Empezar la historia</a>
+    </div>
+  </div>
+
+<script src="js/main.js"></script>
+<script>
+  const envelope = document.getElementById('envelope');
+  const hint = document.getElementById('hint');
+  const content = document.getElementById('content');
+  envelope.addEventListener('click', () => {
+    if (envelope.classList.contains('open')) return;
+    envelope.classList.add('open');
+    hint.style.opacity = '0';
+    setTimeout(() => content.classList.add('show'), 500);
+  });
+</script>
+</body>
+</html>

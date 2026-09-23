@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nuestra historia</title>
+<link rel="stylesheet" href="css/style.css">
+<style>
+  .timeline{ position:relative; padding-left: 28px; }
+  .timeline::before{
+    content:'';
+    position:absolute; left: 6px; top: 6px; bottom: 6px;
+    width: 1px; background: var(--line);
+  }
+  .chapter{
+    position: relative;
+    margin-bottom: 96px;
+    opacity: 0; transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+  .chapter.show{ opacity:1; transform:none; }
+  .chapter::before{
+    content:'';
+    position:absolute; left: -28px; top: 6px;
+    width: 13px; height:13px; border-radius:50%;
+    background: var(--bg);
+    border: 2px solid var(--gold);
+  }
+  .chapter.show::before{ background: var(--gold); }
+
+  .chapter .date{
+    font-family: var(--sans);
+    font-size: 0.8rem;
+    color: var(--gold-soft);
+    margin-bottom: 6px;
+    display:block;
+  }
+  .chapter .photos{
+    display:flex; gap: 18px; flex-wrap: wrap;
+    margin-top: 22px;
+  }
+  .chapter .photos .polaroid{ width: 160px; }
+  .chapter .photos .polaroid:nth-child(2){ transform: rotate(-2deg); }
+  .chapter .photos .polaroid:nth-child(3){ transform: rotate(2deg); }
+
+  .intro-block{ margin-bottom: 70px; }
+  .end-block{ text-align:center; margin-top: 40px; }
+</style>
+</head>
+<body>
+  <div class="starfield" aria-hidden="true"></div>
+
+  <div class="wrap">
+    <div class="intro-block">
+      <span class="date">Capítulo a capítulo</span>
+      <h1 class="marker-title eyebrow-free-title">
+        <span class="c1">Todo</span> <span class="c2">lo que</span> <span class="c3">hemos</span> <span class="c4">vivido</span>
+      </h1>
+      <p class="lead">Ve bajando. Cada parada es un trocito de estos dos años.</p>
+    </div>
+
+    <div class="timeline" id="timeline">
+
+      <!-- Sergio: duplica este bloque .chapter por cada hito. Cambia fecha, título, texto y fotos. -->
+      <section class="chapter">
+        <span class="date">Hito 1 — pon la fecha aquí</span>
+        <h2>Cómo empezó todo</h2>
+        <p>Cuenta aquí cómo os conocisteis, con el detalle que quieras. Este es un texto de ejemplo: sustitúyelo por vuestra historia real.</p>
+        <div class="photos">
+          <figure class="polaroid">
+            <div class="ph-placeholder">foto 1<br>(pega URL de R2)</div>
+            <figcaption>pie de foto</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="chapter">
+        <span class="date">Hito 2 — pon la fecha aquí</span>
+        <h2>La primera cita</h2>
+        <p>Texto de ejemplo. Describe el momento, dónde fue, qué recuerdas con más cariño.</p>
+        <div class="photos">
+          <figure class="polaroid">
+            <div class="ph-placeholder">foto 2</div>
+            <figcaption>pie de foto</figcaption>
+          </figure>
+          <figure class="polaroid">
+            <div class="ph-placeholder">foto 3</div>
+            <figcaption>pie de foto</figcaption>
+          </figure>
+        </div>
+
+        <!-- EJEMPLO: hilo animado que conecta este hito con el corazón del centro.
+             Cópialo donde quieras conectar dos elementos con un hilo que se dibuja al hacer scroll. -->
+        <div class="hilo-zona">
+          <svg class="hilo-svg" viewBox="0 0 300 80" width="100%" height="80">
+            <path d="M 10 70 C 80 10, 150 70, 220 15" />
+          </svg>
+        </div>
+      </section>
+
+      <!-- EJEMPLO: tira de fotos tipo fotomatón que se abre "tirando hacia abajo".
+           Duplica este bloque .pull-photo donde quieras este efecto; cambia los
+           placeholders de dentro por <img src="URL-DE-R2"> cuando tengas fotos reales. -->
+      <section class="chapter">
+        <span class="date">Recuerdo especial</span>
+        <h2>Tira hacia abajo</h2>
+        <div class="pull-photo" id="ejemplo-pull">
+          <button class="pull-tab">
+            <span class="sticker-word" data-text="ABRIR"></span>
+            <span class="flecha">▾</span>
+          </button>
+          <div class="strip">
+            <figure class="polaroid"><div class="ph-placeholder">foto tira 1</div></figure>
+            <figure class="polaroid"><div class="ph-placeholder">foto tira 2</div></figure>
+            <figure class="polaroid"><div class="ph-placeholder">foto tira 3</div></figure>
+          </div>
+        </div>
+      </section>
+
+      <!-- EJEMPLO: corazón para completar a base de clics. Duplícalo donde quieras
+           este efecto; el mensaje final se puede cambiar libremente. -->
+      <section class="chapter">
+        <span class="date">Un pequeño reto</span>
+        <h2>Completa el corazón</h2>
+        <p class="lead">Ve pulsando las casillas hasta completar el corazón entero.</p>
+        <div>
+          <div class="corazon-puzzle"></div>
+          <p class="corazon-progreso"></p>
+          <p class="corazon-mensaje"><!-- Sergio: cambia este mensaje --> Tú me completas.</p>
+        </div>
+      </section>
+
+      <section class="chapter">
+        <span class="date">Hito 3 — pon la fecha aquí</span>
+        <h2>Un viaje juntos</h2>
+        <p>Texto de ejemplo. Aquí puedes meter una anécdota divertida o algo que solo vosotros entendáis.</p>
+        <div class="photos">
+          <figure class="polaroid">
+            <div class="ph-placeholder">foto 4</div>
+            <figcaption>pie de foto</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <section class="chapter">
+        <span class="date">Hito 4 — pon la fecha aquí</span>
+        <h2>Los pequeños momentos</h2>
+        <p>Texto de ejemplo. A veces lo mejor no son los grandes planes, sino el día a día.</p>
+        <div class="photos">
+          <figure class="polaroid">
+            <div class="ph-placeholder">foto 5</div>
+            <figcaption>pie de foto</figcaption>
+          </figure>
+          <figure class="polaroid">
+            <div class="ph-placeholder">foto 6</div>
+            <figcaption>pie de foto</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- añade tantos .chapter como necesites -->
+
+    </div>
+
+    <div class="end-block">
+      <p class="lead" style="margin:0 auto 24px;">Y esto solo es el principio. Todavía queda una cosa más...</p>
+      <a class="btn" href="juegos.html">Sigue jugando</a>
+    </div>
+  </div>
+
+  <nav class="nav">
+    <a href="index.html">Inicio</a>
+    <a href="historia.html" class="active">Historia</a>
+    <a href="juegos.html">Juegos</a>
+    <a href="galeria.html">Galería</a>
+  </nav>
+
+<script src="js/main.js"></script>
+<script>
+  const chapters = document.querySelectorAll('.chapter');
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('show'); });
+  }, { threshold: 0.25 });
+  chapters.forEach(c => io.observe(c));
+</script>
+</body>
+</html>
