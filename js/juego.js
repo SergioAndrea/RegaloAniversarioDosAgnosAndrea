@@ -25,11 +25,35 @@ function initBotonHuidizo() {
     'Esto no va a pasar'
   ];
 
+  // [v7] El "No" nunca debe caer encima del "Sí": se calcula el hueco que
+  // ocupa el Sí dentro de la zona (con un margen) y se sortean posiciones
+  // hasta encontrar una que no lo pise (o, si no hay suerte, la última
+  // probada, que en la práctica casi siempre estará libre igualmente).
   function moverBoton() {
-    const maxX = zona.clientWidth - btnNo.offsetWidth - 16;
-    const maxY = zona.clientHeight - btnNo.offsetHeight - 16;
-    const x = Math.max(0, Math.random() * maxX);
-    const y = Math.max(0, Math.random() * maxY);
+    const zonaRect = zona.getBoundingClientRect();
+    const siRect = btnSi.getBoundingClientRect();
+    const margen = 12;
+    const siCaja = {
+      left: siRect.left - zonaRect.left - margen,
+      top: siRect.top - zonaRect.top - margen,
+      right: siRect.right - zonaRect.left + margen,
+      bottom: siRect.bottom - zonaRect.top + margen
+    };
+
+    const maxX = Math.max(0, zona.clientWidth - btnNo.offsetWidth - 16);
+    const maxY = Math.max(0, zona.clientHeight - btnNo.offsetHeight - 16);
+
+    let x, y, intentosColocar = 0;
+    do {
+      x = Math.random() * maxX;
+      y = Math.random() * maxY;
+      intentosColocar++;
+    } while (
+      intentosColocar < 25 &&
+      x < siCaja.right && x + btnNo.offsetWidth > siCaja.left &&
+      y < siCaja.bottom && y + btnNo.offsetHeight > siCaja.top
+    );
+
     btnNo.style.left = x + 'px';
     btnNo.style.top = y + 'px';
     intentos++;
@@ -42,7 +66,8 @@ function initBotonHuidizo() {
   btnNo.addEventListener('touchstart', (e) => { e.preventDefault(); moverBoton(); }, { passive: false });
 
   btnSi.addEventListener('click', () => {
-    mensaje.innerHTML = 'Sabía que dirías que sí ' + ICONO_CORAZON;  // [v4] SVG en vez de emoji
+    // [v7] Corazón blanco (el vuestro), no rosa
+    mensaje.innerHTML = 'Sabía que dirías que sí ' + ICONO_CORAZON.replace('icono-inline', 'icono-inline icono-corazon-blanco');
     btnNo.style.display = 'none';
     btnSi.disabled = true;
     desbloquearContinuar(btnSi);
@@ -140,6 +165,9 @@ function initMaquina() {
       lightbox.classList.add('show');
       lightbox.setAttribute('aria-hidden', 'false');
     }
+    // [v7] Al cerrar el ticket, la tira vuelve a su sitio pero se esconde
+    // otra vez (antes se quedaba visible debajo de la máquina) y la propia
+    // máquina se resetea para poder meter otra moneda y repetir el juego.
     function cerrarTicket() {
       if (!resultado || !lightbox) return;
       lightbox.classList.remove('show');
@@ -147,6 +175,9 @@ function initMaquina() {
       if (sitioOriginal) {
         sitioOriginal.padre.insertBefore(resultado, sitioOriginal.siguiente);
       }
+      resultado.classList.remove('show');
+      maquina.classList.remove('activada', 'moneda-metida');
+      boton.disabled = false;
     }
     if (btnCerrar) btnCerrar.addEventListener('click', cerrarTicket);
     if (lightbox) {
@@ -154,8 +185,11 @@ function initMaquina() {
     }
 
     boton.addEventListener('click', () => {
-      if (maquina.classList.contains('activada')) return;
       boton.disabled = true;
+
+      // por si se repite el juego, se reinician las animaciones desde cero
+      maquina.classList.remove('activada');
+      void maquina.offsetWidth; // fuerza reflow para reiniciar las transiciones
 
       // 1) meter la moneda
       maquina.classList.add('moneda-metida');
@@ -529,19 +563,25 @@ function initHiloRojo() {
 // contorno queda curvo y no en escalera). Solo se puede avanzar a una
 // "piedra" contigua si el laberinto la conectó; si no, la piedra tiembla
 // para avisar de que por ahí no se puede pasar.
+// [v7] Silueta recalculada a partir de la curva del corazón (para que se
+// note de verdad que es un corazón y no una patata): dos lóbulos
+// definidos arriba, con su hendidura en el centro, y una punta única
+// abajo. INICIO empieza en uno de los lóbulos; FIN es la punta.
 const MASCARA_LABERINTO = [
-  [0,1,1,0,1,1,0],
-  [1,1,1,1,1,1,1],
-  [1,1,1,1,1,1,1],
-  [1,1,1,1,1,1,1],
-  [1,1,1,1,1,1,1],
-  [0,1,1,1,1,1,0],
-  [0,1,1,1,1,1,0],
-  [0,0,1,1,1,0,0],
-  [0,0,0,1,0,0,0]
+  [0,0,1,1,1,0,1,1,1,0,0],
+  [0,0,1,1,1,1,1,1,1,0,0],
+  [0,1,1,1,1,1,1,1,1,1,0],
+  [0,1,1,1,1,1,1,1,1,1,0],
+  [0,1,1,1,1,1,1,1,1,1,0],
+  [0,0,1,1,1,1,1,1,1,0,0],
+  [0,0,1,1,1,1,1,1,1,0,0],
+  [0,0,0,1,1,1,1,1,0,0,0],
+  [0,0,0,0,1,1,1,0,0,0,0],
+  [0,0,0,0,0,1,0,0,0,0,0],
+  [0,0,0,0,0,1,0,0,0,0,0]
 ];
-const INICIO_LABERINTO = { f: 0, c: 1 };
-const FIN_LABERINTO = { f: 8, c: 3 };
+const INICIO_LABERINTO = { f: 0, c: 3 };
+const FIN_LABERINTO = { f: 10, c: 5 };
 
 function generarConexionesLaberinto(mascara) {
   const filas = mascara.length, cols = mascara[0].length;
@@ -585,7 +625,7 @@ function initLaberinto() {
   const filas = MASCARA_LABERINTO.length;
   const cols = MASCARA_LABERINTO[0].length;
   const paso = 40;                 // separación entre centros de piedra
-  const radio = paso * 0.36;
+  const radio = paso * 0.4;
 
   const esHueco = (f, c) => f < 0 || f >= filas || c < 0 || c >= cols || MASCARA_LABERINTO[f][c] === 0;
   const centro = (f, c) => [c * paso + paso / 2, f * paso + paso / 2];

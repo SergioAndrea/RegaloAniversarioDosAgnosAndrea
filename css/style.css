@@ -147,6 +147,8 @@ a{ color: inherit; }
 
 /* [v4] Icono SVG pequeño dentro de una línea de texto (p. ej. el corazón) */
 .icono-inline{ width: 1em; height: 1em; vertical-align: -0.12em; fill: var(--c3); }
+/* [v7] El corazón de "sabía que dirías que sí" es el vuestro: blanco, no rosa */
+.icono-inline.icono-corazon-blanco{ fill: var(--c6); }
 
 /* Polaroid para fotos */
 .polaroid{
@@ -182,6 +184,57 @@ a{ color: inherit; }
   font-size: 0.9rem;
   text-align: center;
   padding-top: 10px;
+}
+
+/* Contenedor genérico de fotos sueltas dentro de una escena (hitos 1/3/4...).
+   Antes no tenía ancho propio y las polaroids salían minúsculas: ahora se
+   reparten centradas y con un tamaño cómodo de ver. */
+.photos{
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+  justify-content: center;
+  margin-top: 22px;
+}
+.photos .polaroid{
+  width: clamp(190px, 46vw, 270px);
+}
+
+/* [v7] Hueco de vídeo (escena de bienvenida): mismo lenguaje visual que
+   los .ph-placeholder de fotos, pero en 16/9 y con icono de "play".
+   Sustituye el contenido de .video-hueco por un <video controls
+   src="URL-DE-R2" poster="..."></video> cuando tengas el vídeo. */
+.video-hueco{
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  aspect-ratio: 16 / 9;
+  margin: 28px auto;
+  border-radius: 10px;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--bg-card), var(--bg-soft));
+  border: 1px dashed rgba(244,236,224,0.28);
+  box-shadow: var(--shadow);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.video-hueco video{
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.video-marcador{
+  text-align: center;
+  color: var(--cream-dim);
+  font-family: var(--sans);
+  font-size: 0.85rem;
+  padding: 16px;
+}
+.video-marcador svg{
+  width: 46px; height: 46px;
+  color: var(--gold-soft);
+  margin-bottom: 10px;
 }
 
 /* =========================================================
@@ -338,7 +391,7 @@ a{ color: inherit; }
 }
 .laberinto svg{
   display: block;
-  width: min(280px, 82vw);
+  width: min(340px, 90vw);
   height: auto;
   overflow: visible;
 }
@@ -390,13 +443,37 @@ a{ color: inherit; }
 /* --- Hilo animado que conecta dos elementos ---
    Uso: ver ejemplo comentado en historia.html. El SVG se "dibuja"
    solo al hacer scroll hasta él (initHilo en main.js). */
-.hilo-zona{ position: relative; margin: 40px 0; }
-.hilo-svg path{
+.hilo-zona{ position: relative; margin: 40px 0; display: flex; justify-content: center; }
+.hilo-svg{ width: 100%; max-width: 320px; height: auto; overflow: visible; }
+.hilo-svg .hilo-trazo{
   fill: none;
   stroke: var(--c3);
   stroke-width: 2.5;
   stroke-linecap: round;
 }
+/* [v7] Puntaditas y corazones de hilo a lo largo del trazo: aparecen con
+   un pequeño fundido cuando la línea ya se ha dibujado (initHilo añade la
+   clase "en-vista" a .hilo-zona). Sustituyen a la "ralla" sola de antes. */
+.hilo-svg .hilo-puntada{
+  fill: none;
+  stroke: var(--cream-dim);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  opacity: 0;
+  transition: opacity 0.5s ease;
+}
+.hilo-svg .hilo-corazon-mini{
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+  transition: opacity 0.5s ease, transform 0.5s cubic-bezier(.34,1.56,.64,1);
+  transform: scale(0.4);
+}
+.hilo-zona.en-vista .hilo-puntada{ opacity: 0.8; }
+.hilo-zona.en-vista .hilo-corazon-mini{ opacity: 1; transform: scale(1); }
+.hilo-svg .hilo-corazon-mini.mini-1{ fill: var(--c3); transition-delay: 0.5s; }
+.hilo-svg .hilo-corazon-mini.mini-2{ fill: var(--c1); transition-delay: 0.75s; }
+.hilo-svg .hilo-corazon-mini.mini-3{ fill: var(--c5); transition-delay: 1s; }
 
 /* --- Máquina expendedora ---
    Uso: ver ejemplo en historia.html (initMaquina en juego.js). Al pulsar:
@@ -474,7 +551,7 @@ a{ color: inherit; }
   transition: opacity 0.45s ease, transform 0.5s cubic-bezier(.34,1.56,.64,1);
 }
 .maquina .resultado.show{ opacity: 1; transform: none; max-height: 900px; margin-top: 14px; }
-.maquina .resultado .polaroid{ width: 100%; max-width: 200px; margin: 0 auto 10px; }
+.maquina .resultado .polaroid{ width: 100%; max-width: 230px; margin: 0 auto 10px; }
 
 /* --- [v6] Ranura + moneda de 1€ ---
    Uso: ver ejemplo en historia.html (initMaquina en juego.js). Al pulsar
@@ -515,12 +592,15 @@ a{ color: inherit; }
 .ticket-lightbox-interior{
   transform: scale(0.7);
   transition: transform 0.45s cubic-bezier(.34,1.56,.64,1);
-  width: 100%; max-width: 320px; max-height: 82vh; overflow: auto;
+  width: 100%; max-width: 380px; max-height: 82vh; overflow: auto;
 }
 .ticket-lightbox.show .ticket-lightbox-interior{ transform: scale(1); }
 .ticket-lightbox .resultado{
   opacity: 1 !important; transform: none !important; max-height: none !important; margin: 0 !important;
 }
+/* Al ampliarse, la tira de fotos ya no es descendiente de .maquina, así que
+   necesita su propio tamaño (si no, salía minúscula dentro del lightbox). */
+.ticket-lightbox .resultado .polaroid{ width: 100%; max-width: 280px; margin: 0 auto 16px; }
 .ticket-cerrar{
   position: absolute; top: 18px; right: 20px;
   width: 38px; height: 38px; border-radius: 50%;
@@ -770,7 +850,7 @@ a{ color: inherit; }
   flex-direction: column;
   gap: 64px;                      /* hueco por donde pasa el hilo */
 }
-.hilo-rojo .polaroid{ width: min(32vw, 120px); position: relative; }
+.hilo-rojo .polaroid{ width: min(40vw, 165px); position: relative; }
 .hilo-foto-a{ align-self: flex-start; margin-left: 4%; }
 .hilo-foto-b{ align-self: flex-end; margin-right: 4%; }
 .hilo-rojo-svg{ position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
@@ -1018,7 +1098,7 @@ a{ color: inherit; }
   margin-top: 6px;
 }
 .comida-fotos .polaroid{
-  width: 132px;
+  width: 165px;
   transform: rotate(var(--r, 0deg));
 }
 .scrapbook-nota{
@@ -1038,7 +1118,11 @@ a{ color: inherit; }
   .nav{ bottom: 14px; gap: 2px; padding: 5px; }
   .nav a{ padding: 7px 11px; font-size: 0.75rem; }
 
-  .chapter .photos .polaroid{ width: 130px; }
+  .photos .polaroid{ width: clamp(155px, 56vw, 230px); }
+  .comida-fotos .polaroid{ width: 140px; }
+  .hilo-rojo .polaroid{ width: min(38vw, 135px); }
+  .maquina .resultado .polaroid,
+  .ticket-lightbox .resultado .polaroid{ max-width: 210px; }
 
   .grid-galeria{ grid-template-columns: repeat(2, 1fr); gap: 12px; }
 

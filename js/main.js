@@ -227,7 +227,7 @@ function initHilo() {
   const io = new IntersectionObserver((entries) => {
     entries.forEach((entry) => {
       if (!entry.isIntersecting) return;
-      const path = entry.target.querySelector('.hilo-svg path');
+      const path = entry.target.querySelector('.hilo-trazo');
       if (path && !path.dataset.dibujado) {
         const largo = path.getTotalLength();
         path.style.strokeDasharray = largo;
@@ -237,6 +237,8 @@ function initHilo() {
         path.style.strokeDashoffset = '0';
         path.dataset.dibujado = 'true';
       }
+      // [v7] las puntaditas y corazones del hilo se revelan justo después
+      entry.target.classList.add('en-vista');
     });
   }, { threshold: 0.4 });
   zonas.forEach((z) => io.observe(z));
