@@ -45,6 +45,13 @@ Ninguno usa emojis: todos los iconos son `<svg>` escritos en el propio HTML.
 - Las escenas con el botón "Continuar" deshabilitado (pizarra, deslizador, calendario, hilo)
   bloquean hasta completarse; si prefieres que no bloqueen, quita el `disabled` de su botón.
 
+## Componentes nuevos (v5)
+- **Laberinto en forma de corazón** (`.laberinto`): genera un recorrido válido distinto
+  cada vez que se carga la página (un árbol de expansión aleatorio dentro de la silueta
+  de corazón definida en `MASCARA_LABERINTO`, en `juego.js`). Se toca casilla a casilla;
+  si una casilla no está conectada a la actual, tiembla en vez de moverse. Cambia
+  `INICIO_LABERINTO`, `FIN_LABERINTO` o la propia máscara si quieres otra forma o tamaño.
+
 
 ## 1. Editar el contenido
 - **historia.html**: cada hito y cada minijuego es una `<section class="escena">`. Duplica la que más se parezca a lo que quieras añadir.

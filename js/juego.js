@@ -120,12 +120,12 @@ function initMaquina() {
     if (!boton) return;
     boton.addEventListener('click', () => {
       if (maquina.classList.contains('activada')) return;
-      maquina.classList.add('activada');
+      maquina.classList.add('activada'); // dispara la caída del producto y, con retraso, la trampilla (ver CSS)
       boton.disabled = true;
       setTimeout(() => {
         if (resultado) resultado.classList.add('show');
         desbloquearContinuar(maquina);
-      }, 850); // coincide con la duración de la transición del "producto" en CSS
+      }, 1250); // caída (~0.9s) + retraso de la trampilla (~0.6s) ya solapados
     });
   });
 }
@@ -476,6 +476,157 @@ function initHiloRojo() {
 }
 
 
+/* ---------- JUEGO: laberinto en forma de corazón ---------- */
+// Genera un recorrido válido aleatorio (árbol de expansión, DFS aleatorio)
+// dentro de la silueta de corazón definida en MASCARA_LABERINTO. Solo se
+// puede avanzar a una celda contigua si el laberinto la conectó; si no,
+// la celda se sacude para avisar de que ahí no se puede pasar.
+const MASCARA_LABERINTO = [
+  [0,1,0,0,0,1,0],
+  [1,1,1,0,1,1,1],
+  [1,1,1,1,1,1,1],
+  [0,1,1,1,1,1,0],
+  [0,0,1,1,1,0,0],
+  [0,0,0,1,0,0,0],
+  [0,0,0,1,0,0,0],
+  [0,0,0,1,0,0,0],
+  [0,0,0,1,0,0,0],
+  [0,0,0,1,0,0,0]
+];
+const INICIO_LABERINTO = { f: 0, c: 1 };
+const FIN_LABERINTO = { f: 9, c: 3 };
+
+function generarConexionesLaberinto(mascara) {
+  const filas = mascara.length, cols = mascara[0].length;
+  const visitado = Array.from({ length: filas }, () => Array(cols).fill(false));
+  const conexiones = new Set();
+  const clave = (f, c) => f + ',' + c;
+
+  function vecinos(f, c) {
+    return [[-1,0],[1,0],[0,-1],[0,1]]
+      .map(([df, dc]) => [f + df, c + dc])
+      .filter(([nf, nc]) => nf >= 0 && nf < filas && nc >= 0 && nc < cols && mascara[nf][nc] === 1);
+  }
+  function dfs(f, c) {
+    visitado[f][c] = true;
+    vecinos(f, c).sort(() => Math.random() - 0.5).forEach(([nf, nc]) => {
+      if (!visitado[nf][nc]) {
+        conexiones.add(clave(f, c) + '|' + clave(nf, nc));
+        conexiones.add(clave(nf, nc) + '|' + clave(f, c));
+        dfs(nf, nc);
+      }
+    });
+  }
+  dfs(INICIO_LABERINTO.f, INICIO_LABERINTO.c);
+  return conexiones;
+}
+
+function initLaberinto() {
+  const grid = document.querySelector('.laberinto');
+  if (!grid) return;
+  const contenedor = grid.closest('.escena') || grid.parentElement;
+  const mensajeFinal = contenedor.querySelector('.laberinto-final');
+  const conexiones = generarConexionesLaberinto(MASCARA_LABERINTO);
+  const clave = (f, c) => f + ',' + c;
+
+  const filas = MASCARA_LABERINTO.length;
+  const cols = MASCARA_LABERINTO[0].length;
+  const celda = 28, hueco = 4, paso = celda + hueco;
+
+  const celdas = {};
+  MASCARA_LABERINTO.forEach((fila, f) => {
+    fila.forEach((valor, c) => {
+      const div = document.createElement('div');
+      if (valor === 1) {
+        div.className = 'laberinto-celda';
+        if (f === INICIO_LABERINTO.f && c === INICIO_LABERINTO.c) div.classList.add('inicio');
+        if (f === FIN_LABERINTO.f && c === FIN_LABERINTO.c) div.classList.add('fin');
+        div.addEventListener('click', () => intentarMover(f, c));
+        celdas[clave(f, c)] = div;
+      } else {
+        div.className = 'laberinto-celda hueco';
+      }
+      grid.appendChild(div);
+    });
+  });
+
+  // --- Dibuja los muros: entre dos celdas del corazón que NO estén
+  // conectadas en el recorrido, y también en todo el borde exterior de la
+  // silueta, para que se vea claramente por dónde se puede intentar ir
+  // (como en un laberinto de verdad, no solo una cuadrícula en blanco). ---
+  const svgNS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(svgNS, 'svg');
+  svg.setAttribute('class', 'laberinto-muros');
+  const anchoTotal = cols * paso - hueco;
+  const altoTotal = filas * paso - hueco;
+  svg.setAttribute('width', anchoTotal);
+  svg.setAttribute('height', altoTotal);
+  svg.setAttribute('viewBox', `0 0 ${anchoTotal} ${altoTotal}`);
+
+  function esHueco(f, c) {
+    return f < 0 || f >= filas || c < 0 || c >= cols || MASCARA_LABERINTO[f][c] === 0;
+  }
+  function dibujarLinea(x1, y1, x2, y2) {
+    const l = document.createElementNS(svgNS, 'line');
+    l.setAttribute('x1', x1); l.setAttribute('y1', y1);
+    l.setAttribute('x2', x2); l.setAttribute('y2', y2);
+    svg.appendChild(l);
+  }
+
+  MASCARA_LABERINTO.forEach((fila, f) => {
+    fila.forEach((valor, c) => {
+      if (valor !== 1) return;
+      const x = c * paso, y = f * paso;
+      const esInicio = f === INICIO_LABERINTO.f && c === INICIO_LABERINTO.c;
+      const esFin = f === FIN_LABERINTO.f && c === FIN_LABERINTO.c;
+
+      // Arriba (con hueco de entrada en la celda de inicio)
+      if (!esInicio && (esHueco(f - 1, c) || !conexiones.has(clave(f, c) + '|' + clave(f - 1, c)))) {
+        dibujarLinea(x, y, x + celda, y);
+      }
+      // Abajo (con hueco de salida en la celda de fin)
+      if (!esFin && (esHueco(f + 1, c) || !conexiones.has(clave(f, c) + '|' + clave(f + 1, c)))) {
+        dibujarLinea(x, y + celda, x + celda, y + celda);
+      }
+      // Izquierda
+      if (esHueco(f, c - 1) || !conexiones.has(clave(f, c) + '|' + clave(f, c - 1))) {
+        dibujarLinea(x, y, x, y + celda);
+      }
+      // Derecha
+      if (esHueco(f, c + 1) || !conexiones.has(clave(f, c) + '|' + clave(f, c + 1))) {
+        dibujarLinea(x + celda, y, x + celda, y + celda);
+      }
+    });
+  });
+  grid.appendChild(svg);
+
+  let actualF = INICIO_LABERINTO.f, actualC = INICIO_LABERINTO.c;
+  celdas[clave(actualF, actualC)].classList.add('actual', 'visitada');
+
+  function intentarMover(f, c) {
+    if (f === actualF && c === actualC) return;
+    const permitido = conexiones.has(clave(actualF, actualC) + '|' + clave(f, c));
+    if (!permitido) {
+      const div = celdas[clave(f, c)];
+      if (div) {
+        div.classList.remove('denegado');
+        void div.offsetWidth; // reinicia la animación si se repite
+        div.classList.add('denegado');
+      }
+      return;
+    }
+    celdas[clave(actualF, actualC)].classList.remove('actual');
+    actualF = f; actualC = c;
+    const div = celdas[clave(actualF, actualC)];
+    div.classList.add('actual', 'visitada');
+
+    if (actualF === FIN_LABERINTO.f && actualC === FIN_LABERINTO.c) {
+      if (mensajeFinal) mensajeFinal.classList.add('show');
+      desbloquearContinuar(grid);
+    }
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   initBotonHuidizo();
   initMemoria();
@@ -483,5 +634,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initPizarra();      // [v4]
   initTiraFotos();    // [v4]
   initCalendario();   // [v4]
-  initHiloRojo();     // [v4] (sustituye a initHiloArrastrable)
+  initHiloRojo();      // [v4] (sustituye a initHiloArrastrable)
+  initLaberinto();     // [v5]
 });

@@ -27,21 +27,37 @@
    Componentes estilo scrapbook — reutilizables en cualquier página
    ========================================================= */
 
-// --- Letras de colores tipo pegatina ---
-// Busca cada <span class="sticker-word" data-text="...">, la rellena
-// con una letra por bloque, color aleatorio de la paleta y ligera rotación.
+// --- Letras recortadas de periódico (estilo nota de rescate) ---
+// Busca cada <span class="sticker-word" data-text="...">, la rellena con
+// una letra por recorte: papel de un tono distinto, tipografía distinta
+// (mezcla de fuentes, como si vinieran de periódicos distintos), tamaño y
+// rotación ligeramente al azar, y un borde irregular tipo "papel rasgado".
 function initStickerWords() {
-  const paleta = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6'];
+  const tonosPapel = ['#efe8d8', '#e6dfc9', '#f2ecdd', '#e3dcc6', '#eee6d1'];
+  const fuentes = [
+    "Georgia, 'Times New Roman', serif",
+    "'Courier New', Courier, monospace",
+    "Arial, Helvetica, sans-serif",
+    "'Times New Roman', Times, serif",
+    "'Trebuchet MS', sans-serif"
+  ];
+  const recortes = ['recorte-1', 'recorte-2', 'recorte-3'];
+
   document.querySelectorAll('.sticker-word').forEach((contenedor) => {
     const texto = contenedor.dataset.text || contenedor.textContent;
     contenedor.textContent = '';
     [...texto].forEach((letra) => {
       const span = document.createElement('span');
-      span.className = 'sticker-letter';
+      const recorte = recortes[Math.floor(Math.random() * recortes.length)];
+      span.className = 'sticker-letter ' + recorte;
       span.textContent = letra === ' ' ? '\u00A0' : letra;
-      const color = paleta[Math.floor(Math.random() * paleta.length)];
-      span.style.background = `var(--${color})`;
-      span.style.transform = `rotate(${(Math.random() * 10 - 5).toFixed(1)}deg)`;
+      span.style.background = tonosPapel[Math.floor(Math.random() * tonosPapel.length)];
+      span.style.fontFamily = fuentes[Math.floor(Math.random() * fuentes.length)];
+      span.style.fontWeight = Math.random() > 0.5 ? '700' : '400';
+      span.style.fontStyle = Math.random() > 0.85 ? 'italic' : 'normal';
+      const escala = (0.9 + Math.random() * 0.3).toFixed(2);
+      const giro = (Math.random() * 16 - 8).toFixed(1);
+      span.style.transform = `rotate(${giro}deg) scale(${escala})`;
       contenedor.appendChild(span);
     });
   });

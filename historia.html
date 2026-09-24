@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Nuestra historia</title>
-<link rel="stylesheet" href="css/style.css?v=4">
+<link rel="stylesheet" href="css/style.css?v=6">
 </head>
 <body>
   <div class="starfield" aria-hidden="true"></div>
@@ -206,10 +206,23 @@
       <h2><span class="sticker-word" data-text="MAQUINA"></span></h2>
       <p class="lead">Dale al botón. A ver qué sale.</p>
       <div class="maquina">
-        <div class="ventana">
-          <!-- [v4] el "producto" es ahora un SVG (tira de fotomatón), no un emoji -->
-          <div class="producto">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="2.5" width="18" height="19" rx="2"/><path d="M7.5 2.5v19M16.5 2.5v19M3 7h4.5M3 12h4.5M3 17h4.5M16.5 7H21M16.5 12H21M16.5 17H21"/></svg>
+        <div class="maquina-cuerpo">
+          <div class="maquina-ventana">
+            <div class="maquina-bobina"></div>
+            <div class="maquina-bobina"></div>
+            <div class="maquina-bobina">
+              <!-- [v5] el "producto" cae por esta bobina cuando se pulsa -->
+              <div class="producto">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="2.5" width="18" height="19" rx="2"/><path d="M7.5 2.5v19M16.5 2.5v19M3 7h4.5M3 12h4.5M3 17h4.5M16.5 7H21M16.5 12H21M16.5 17H21"/></svg>
+              </div>
+            </div>
+          </div>
+          <div class="maquina-rejilla"></div>
+          <div class="maquina-tolva">
+            <!-- [v5] trampilla que se abre con un giro cuando llega el producto -->
+            <div class="maquina-flap">
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </div>
           </div>
         </div>
         <button class="btn">Pulsar</button>
@@ -363,7 +376,35 @@
       </div>
     </section>
 
-    <!-- ESCENA 14 — Cierre -->
+    <!-- ESCENA 14 — [v5] Minijuego: laberinto en forma de corazón (gated)
+         initLaberinto (juego.js) genera un recorrido distinto cada vez que
+         se carga la página dentro de la silueta de corazón de abajo, y
+         dibuja los muros para que se vea por dónde intentar ir (como el
+         laberinto de papel). Sustituye el .ph-placeholder de la foto por
+         <img src="URL-DE-R2"> cuando tengas la foto real. -->
+    <section class="escena">
+      <span class="date">Hito 5 — pon la fecha aquí</span>
+      <div class="photos">
+        <figure class="polaroid" style="width:100%; max-width:280px;">
+          <div class="ph-placeholder">foto grande<br>(URL de R2)</div>
+          <figcaption>pie de foto</figcaption>
+        </figure>
+      </div>
+      <h2 style="margin-top:22px;">Hora de resolver</h2>
+      <p class="lead">Ve tocando casillas para avanzar. Si una casilla no deja pasar, tiembla: prueba otra.</p>
+      <p class="laberinto-pista">Del corazón de arriba hasta la punta de abajo</p>
+      <div class="laberinto"></div>
+      <p class="laberinto-final">
+        <!-- Sergio: cambia este mensaje si quieres -->
+        Como todo lo nuestro: con vueltas, pero siempre llegando.
+      </p>
+      <div class="zona-continuar">
+        <button class="btn continuar" disabled>Continuar</button>
+        <p class="pista-bloqueo">Llega hasta el final del laberinto para seguir</p>
+      </div>
+    </section>
+
+    <!-- ESCENA 15 — Cierre -->
     <section class="escena">
       <span class="date">Y esto solo es el principio</span>
       <h1 class="marker-title eyebrow-free-title">
@@ -382,8 +423,8 @@
     <a href="galeria.html">Galería</a>
   </nav>
 
-<script src="js/main.js?v=4"></script>
-<script src="js/juego.js?v=4"></script>
-<script src="js/escenas.js?v=4"></script>
+<script src="js/main.js?v=6"></script>
+<script src="js/juego.js?v=6"></script>
+<script src="js/escenas.js?v=6"></script>
 </body>
 </html>
