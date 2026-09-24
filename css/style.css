@@ -214,6 +214,23 @@ a{ color: inherit; }
 .sticker-letter.recorte-2{ clip-path: polygon(0% 9%, 31% 0%, 61% 5%, 100% 0%, 93% 34%, 100% 63%, 91% 100%, 56% 95%, 26% 100%, 0% 91%, 8% 54%, 0% 29%); }
 .sticker-letter.recorte-3{ clip-path: polygon(7% 0%, 41% 6%, 76% 0%, 100% 16%, 91% 44%, 100% 79%, 79% 100%, 46% 91%, 16% 100%, 0% 74%, 11% 41%, 0% 15%); }
 
+/* --- Pegatinas de burbuja (letras troqueladas de scrapbook, arcoíris) ---
+   Uso: <span class="sticker-word" data-text="NAVIDAD" data-estilo="burbuja"></span>
+   El JS (initStickerWords) reparte los colores --c1..--c5 letra a letra y
+   randomiza un poco el radio de cada esquina para que no sean rectángulos
+   perfectos, como pegatinas infantiles troqueladas de verdad. */
+.sticker-letter.burbuja{
+  color: #1c1812;
+  font-family: var(--marker);
+  font-weight: 700;
+  padding: 5px 9px 7px;
+  min-width: 1.35em;
+  box-shadow:
+    0 3px 0 rgba(0,0,0,0.32),
+    0 8px 14px rgba(0,0,0,0.35),
+    inset 0 2px 0 rgba(255,255,255,0.4);
+}
+
 /* Título manuscrito multicolor: envuelve cada palabra en un <span class="c1">…</span>
    alternando c1..c6 para que cada palabra tenga un color distinto. */
 .marker-title{ font-family: var(--serif); font-weight: 700; line-height: 1.15; }
@@ -262,25 +279,33 @@ a{ color: inherit; }
 .pull-photo.open .strip{ max-height: 900px; margin-top: 14px; }
 .strip .polaroid{ width: 100%; max-width: 220px; margin: 0 auto; }
 
-/* --- Corazón para completar (grid en forma de corazón) ---
+/* --- Corazón para completar: puzzle de piezas reales ---
    Uso: ver ejemplo comentado en historia.html. El JS (initCorazonPuzzle)
-   construye la cuadrícula a partir del patrón definido ahí mismo. */
+   dibuja un <svg> con una <path> por pieza, cada una con lengüetas y
+   huecos que encajan con sus vecinas (como un puzzle de cartón real). */
 .corazon-puzzle{
-  display: grid;
-  grid-template-columns: repeat(7, 26px);
-  grid-auto-rows: 26px;
-  gap: 4px;
+  display: flex;
   justify-content: center;
   margin: 24px auto;
 }
-.corazon-celda{
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background 0.25s ease, transform 0.15s ease;
+.corazon-puzzle svg{
+  display: block;
+  width: min(300px, 84vw);
+  height: auto;
+  overflow: visible;
 }
-.corazon-celda.hueco{ visibility: hidden; cursor: default; }
-.corazon-celda.vacia{ background: var(--bg-soft); border: 1px solid var(--line); }
-.corazon-celda.llena{ background: var(--c3); transform: scale(1.05); }
+.corazon-pieza{
+  fill: var(--bg-soft);
+  stroke: var(--line);
+  stroke-width: 2;
+  cursor: pointer;
+  transition: fill 0.25s ease, transform 0.15s ease;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+.corazon-pieza:hover{ fill: rgba(255,255,255,0.14); }
+.corazon-pieza.llena{ fill: var(--c3); transform: scale(1.045); }
+.corazon-pieza:focus-visible{ outline: 2px solid var(--rose); outline-offset: 2px; }
 .corazon-progreso{
   text-align: center;
   font-family: var(--marker);
@@ -303,44 +328,52 @@ a{ color: inherit; }
    página (algoritmo de árbol de expansión aleatorio) dentro de la silueta
    de corazón, y controla los clics: solo puedes moverte a una celda
    contigua si el laberinto la considera conectada. */
+/* [v6] Ya no es una cuadrícula: un camino de "piedras" redondas dentro
+   de la silueta de corazón, con caminitos entre las conectadas y
+   pequeñas barreras entre las vecinas que NO lo están. */
 .laberinto{
-  position: relative;
-  display: grid;
-  grid-template-columns: repeat(7, 28px);
-  grid-auto-rows: 28px;
-  gap: 4px;
+  display: flex;
   justify-content: center;
-  margin: 22px auto 10px;
+  margin: 20px auto 8px;
 }
-.laberinto-celda{
-  border-radius: 5px;
-  background: var(--bg-soft);
-  border: 1px solid var(--line);
+.laberinto svg{
+  display: block;
+  width: min(280px, 82vw);
+  height: auto;
+  overflow: visible;
+}
+.laberinto-conexion{
+  stroke: rgba(244, 236, 224, 0.16);
+  stroke-width: 13;
+  stroke-linecap: round;
+}
+.laberinto-gate{
+  stroke: var(--cream-dim);
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  opacity: 0.85;
+}
+.laberinto-pebble{
+  fill: var(--bg-soft);
+  stroke: var(--line);
+  stroke-width: 2;
   cursor: pointer;
-  transition: background 0.2s ease, transform 0.15s ease;
+  transition: fill 0.2s ease, transform 0.15s ease;
+  transform-box: fill-box;
+  transform-origin: center;
 }
-.laberinto-celda.hueco{ visibility: hidden; cursor: default; border: none; }
-.laberinto-celda.visitada{ background: rgba(149, 225, 179, 0.35); }
-.laberinto-celda.actual{ background: var(--c5); transform: scale(1.1); }
-.laberinto-celda.inicio{ box-shadow: inset 0 0 0 2px var(--c2); }
-.laberinto-celda.fin{ background: var(--c1); }
-.laberinto-celda.fin.actual{ background: var(--c1); }
-.laberinto-celda.denegado{ animation: sacudida 0.35s ease; }
+.laberinto-pebble:hover{ fill: rgba(255,255,255,0.14); }
+.laberinto-pebble.visitada{ fill: rgba(149, 225, 179, 0.4); }
+.laberinto-pebble.actual{ transform: scale(1.28); filter: drop-shadow(0 0 6px rgba(149,225,179,0.65)); }
+.laberinto-pebble.inicio{ stroke: var(--c2); stroke-width: 3; }
+.laberinto-pebble.fin{ fill: var(--c1); }
+.laberinto-pebble.fin.actual{ fill: var(--c1); filter: drop-shadow(0 0 6px rgba(244,211,94,0.65)); }
+.laberinto-pebble.denegado{ animation: sacudida 0.35s ease; }
+.laberinto-pebble:focus-visible{ outline: 2px solid var(--rose); outline-offset: 2px; }
 @keyframes sacudida{
   0%, 100%{ transform: translateX(0); }
   25%{ transform: translateX(-4px); }
   75%{ transform: translateX(4px); }
-}
-.laberinto-muros{
-  position: absolute;
-  top: 0; left: 0;
-  pointer-events: none;
-  z-index: 2;
-}
-.laberinto-muros line{
-  stroke: var(--cream);
-  stroke-width: 2.5;
-  stroke-linecap: round;
 }
 .laberinto-pista{
   text-align: center; font-family: var(--marker);
@@ -434,6 +467,7 @@ a{ color: inherit; }
 }
 .maquina.activada .maquina-flap{ transform: rotateX(-105deg); }
 .maquina .btn{ margin: 16px auto 0; }
+.maquina .btn[disabled]{ opacity: 0.55; cursor: not-allowed; transform: none; }
 .maquina .resultado{
   opacity: 0; transform: translateY(-10px) scale(0.92);
   max-height: 0; overflow: hidden;
@@ -441,6 +475,60 @@ a{ color: inherit; }
 }
 .maquina .resultado.show{ opacity: 1; transform: none; max-height: 900px; margin-top: 14px; }
 .maquina .resultado .polaroid{ width: 100%; max-width: 200px; margin: 0 auto 10px; }
+
+/* --- [v6] Ranura + moneda de 1€ ---
+   Uso: ver ejemplo en historia.html (initMaquina en juego.js). Al pulsar
+   "Meter 1€", la moneda sube y se cuela por la ranura con un giro, y solo
+   entonces arranca la caída del producto de siempre. */
+.maquina-moneda-zona{
+  display: flex; align-items: center; justify-content: center;
+  gap: 10px; margin-top: 12px;
+}
+.maquina-ranura{
+  width: 34px; height: 7px; border-radius: 4px;
+  background: #0c0c0e;
+  box-shadow: inset 0 2px 4px rgba(0,0,0,0.6);
+}
+.moneda{
+  width: 32px; height: 32px; border-radius: 50%;
+  background: radial-gradient(circle at 34% 30%, #f6e3ac, var(--gold) 72%);
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.4), 0 3px 6px rgba(0,0,0,0.4);
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--serif); font-weight: 700; color: #5b4210; font-size: 0.85rem;
+  transition: transform 0.5s cubic-bezier(.5,-0.3,.5,1.3), opacity 0.3s ease 0.35s;
+}
+.maquina.moneda-metida .moneda{ transform: translateY(-42px) rotate(340deg) scale(0.55); opacity: 0; }
+
+/* --- [v6] Ticket ampliado a pantalla completa (como la carta) ---
+   El propio nodo .resultado se traslada aquí dentro (ver initMaquina) y
+   vuelve a su sitio original al cerrar, así el HTML de las fotos vive en
+   un único lugar (dentro de la máquina, en historia.html). */
+.ticket-lightbox{
+  position: fixed; inset: 0; z-index: 80;
+  display: flex; align-items: center; justify-content: center;
+  padding: 30px 22px;
+  background: rgba(6,6,8,0.84);
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.35s ease;
+}
+.ticket-lightbox.show{ opacity: 1; pointer-events: auto; }
+.ticket-lightbox-interior{
+  transform: scale(0.7);
+  transition: transform 0.45s cubic-bezier(.34,1.56,.64,1);
+  width: 100%; max-width: 320px; max-height: 82vh; overflow: auto;
+}
+.ticket-lightbox.show .ticket-lightbox-interior{ transform: scale(1); }
+.ticket-lightbox .resultado{
+  opacity: 1 !important; transform: none !important; max-height: none !important; margin: 0 !important;
+}
+.ticket-cerrar{
+  position: absolute; top: 18px; right: 20px;
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--bg-card); border: 1px solid var(--line);
+  color: var(--cream); font-size: 1.4rem; line-height: 1;
+  cursor: pointer;
+}
+.ticket-cerrar:hover{ background: var(--bg-soft); }
 
 /* =========================================================
    [v4] COMPONENTES NUEVOS DE historia.html
@@ -860,6 +948,89 @@ a{ color: inherit; }
 }
 
 /* =========================================================
+   [v6] "Nuestro mundo de la comida" — página de scrapbook llena de
+   pegatinas, al estilo de la página física "el mundo del baloncesto
+   favorito de Sergio": un panel de cartulina con iconos sueltos
+   repartidos y girados, más un hueco de fotos para pegar las tuyas.
+   Uso: ver ejemplo en historia.html. Las fotos son placeholders: sustitúyelos
+   por <img src="URL-DE-R2"> cuando tengas las imágenes reales.
+   ========================================================= */
+.scrapbook-panel{
+  position: relative;
+  background: var(--bg-card);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 30px 18px 26px;
+  margin: 22px 0 4px;
+  overflow: hidden;
+  box-shadow: var(--shadow);
+}
+.scrapbook-panel::before{
+  /* textura sutil de "cartulina", como el fondo negro del álbum físico */
+  content: "";
+  position: absolute; inset: 0;
+  background-image: radial-gradient(rgba(255,255,255,0.035) 1px, transparent 1px);
+  background-size: 14px 14px;
+  pointer-events: none;
+}
+.scrapbook-titulo{
+  position: relative; z-index: 2;
+  text-align: center;
+  margin: 0 0 18px;
+}
+
+/* Nube de pegatinas sueltas (iconos SVG), cada una posicionada y girada
+   a mano vía --x / --y / --r en el propio HTML, para que no queden en
+   fila como una lista sino esparcidas como pegatinas reales. */
+.pegatinas-nube{
+  position: relative;
+  min-height: 190px;
+  margin-bottom: 4px;
+}
+.pegatina{
+  position: absolute;
+  left: var(--x, 50%);
+  top: var(--y, 50%);
+  width: var(--s, 46px);
+  height: var(--s, 46px);
+  transform: translate(-50%, -50%) rotate(var(--r, 0deg));
+  filter: drop-shadow(0 4px 6px rgba(0,0,0,0.45));
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  padding: 8px;
+  color: #1c1812;
+  box-shadow: inset 0 0 0 2px rgba(255,255,255,0.35);
+}
+.pegatina svg{ width: 100%; height: 100%; }
+
+/* Trozo de cinta washi decorativa, reutilizable donde haga falta */
+.washi{
+  position: absolute;
+  width: 74px; height: 22px;
+  background: rgba(244, 211, 94, 0.5);
+  z-index: 3;
+}
+
+.comida-fotos{
+  position: relative; z-index: 2;
+  display: flex; flex-wrap: wrap;
+  gap: 16px; justify-content: center;
+  margin-top: 6px;
+}
+.comida-fotos .polaroid{
+  width: 132px;
+  transform: rotate(var(--r, 0deg));
+}
+.scrapbook-nota{
+  position: relative; z-index: 2;
+  text-align: center;
+  font-family: var(--marker);
+  color: var(--cream-dim);
+  font-size: 0.95rem;
+  margin-top: 16px;
+}
+
+/* =========================================================
    Responsive — móvil primero para lo esencial
    ========================================================= */
 @media (max-width: 640px){
@@ -879,6 +1050,10 @@ a{ color: inherit; }
   /* [v4] componentes nuevos en móvil */
   .hilo-rojo{ gap: 60px; }
   .tira{ gap: 16px; }
+
+  /* [v6] nube de pegatinas: un poco más compacta en pantallas pequeñas */
+  .pegatinas-nube{ min-height: 165px; }
+  .pegatina{ width: calc(var(--s, 46px) * 0.85); height: calc(var(--s, 46px) * 0.85); }
 }
 
 @media (min-width: 900px){

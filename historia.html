@@ -200,11 +200,16 @@
       </div>
     </section>
 
-    <!-- ESCENA 8 — Minijuego: máquina expendedora (gated) -->
+    <!-- ESCENA 8 — Minijuego: máquina expendedora (gated)
+         [v6] Ahora "cuesta" 1€: al pulsar, una moneda sube y se cuela por
+         la ranura (initMaquina en juego.js) y solo entonces cae el
+         producto. Cuando la tira de fotos asoma, se amplía sola a
+         pantalla completa (#ticket-lightbox, definido al final del body)
+         para poder verla bien, igual que la carta del hilo rojo. -->
     <section class="escena">
       <span class="date">Pulsa y espera</span>
-      <h2><span class="sticker-word" data-text="MAQUINA"></span></h2>
-      <p class="lead">Dale al botón. A ver qué sale.</p>
+      <h2><span class="sticker-word" data-text="MAQUINA" data-estilo="burbuja"></span></h2>
+      <p class="lead">Mete la moneda y dale al botón. A ver qué sale.</p>
       <div class="maquina">
         <div class="maquina-cuerpo">
           <div class="maquina-ventana">
@@ -225,7 +230,15 @@
             </div>
           </div>
         </div>
-        <button class="btn">Pulsar</button>
+
+        <!-- [v6] Ranura + moneda de 1€: puramente decorativo, el JS solo
+             añade la clase "moneda-metida" para animarla al pulsar. -->
+        <div class="maquina-moneda-zona">
+          <span class="moneda">1€</span>
+          <span class="maquina-ranura" aria-hidden="true"></span>
+        </div>
+
+        <button class="btn">Meter 1€</button>
         <div class="resultado">
           <!-- Aquí va la tira de fotos: sustituye los placeholders por
                <img src="URL-DE-R2"> cuando tengas fotos reales -->
@@ -376,6 +389,83 @@
       </div>
     </section>
 
+    <!-- ESCENA NUEVA — [v6] "Nuestro mundo de la comida" (solo scroll,
+         decorativa). Inspirada en la página física "El mundo... del
+         baloncesto favorito de Sergio": una cartulina llena de pegatinas
+         sueltas y, debajo, un hueco de fotos para las vuestras.
+         Cada .pegatina se posiciona con --x/--y/--r/--s en su propio
+         style: cambia esos valores (o añade/quita pegatinas) a tu gusto.
+         Sustituye los .ph-placeholder de .comida-fotos por tus fotos
+         reales cuando las tengas. -->
+    <section class="escena">
+      <span class="date">Nuestro tema favorito</span>
+      <h2 class="scrapbook-titulo">
+        <span class="sticker-word" data-text="NUESTRO" data-estilo="burbuja"></span><br>
+        <span class="sticker-word" data-text="MUNDO" data-estilo="periodico"></span>
+        <span class="marker-title" style="font-size:1.5rem; display:inline-block; margin-left:6px;"><span class="c2">de la</span> <span class="c3">comida</span></span>
+      </h2>
+
+      <div class="scrapbook-panel">
+        <span class="washi" style="top:-10px; left:22px; transform:rotate(-7deg);" aria-hidden="true"></span>
+        <span class="washi" style="top:-10px; right:22px; left:auto; transform:rotate(6deg);" aria-hidden="true"></span>
+
+        <div class="pegatinas-nube" aria-hidden="true">
+          <!-- Pizza -->
+          <span class="pegatina" style="--x:12%; --y:18%; --r:-10deg; --s:50px; background:var(--c4);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 21 20H3z"/><circle cx="11" cy="10" r="1"/><circle cx="14.5" cy="14" r="1"/><circle cx="9" cy="15" r="1"/></svg>
+          </span>
+          <!-- Café -->
+          <span class="pegatina" style="--x:32%; --y:8%; --r:8deg; --s:42px; background:var(--c2);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h13v5a5 5 0 0 1-5 5H9a5 5 0 0 1-5-5z"/><path d="M17 10h1.5a2.5 2.5 0 0 1 0 5H17"/><path d="M8 3c0 1-1 1-1 2s1 1 1 2M12 3c0 1-1 1-1 2s1 1 1 2"/></svg>
+          </span>
+          <!-- Hamburguesa -->
+          <span class="pegatina" style="--x:55%; --y:14%; --r:-6deg; --s:52px; background:var(--c1);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 10a8 6 0 0 1 16 0z"/><path d="M3 12h18"/><path d="M4 14h16l-1 3a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2z"/><path d="M4 12h16"/></svg>
+          </span>
+          <!-- Donut -->
+          <span class="pegatina" style="--x:78%; --y:10%; --r:12deg; --s:44px; background:var(--c3);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="3.2"/><circle cx="8" cy="7.5" r="0.6" fill="currentColor"/><circle cx="15" cy="6.5" r="0.6" fill="currentColor"/><circle cx="17.5" cy="10" r="0.6" fill="currentColor"/></svg>
+          </span>
+          <!-- Helado -->
+          <span class="pegatina" style="--x:8%; --y:52%; --r:9deg; --s:46px; background:var(--c5);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M8 10a4 4 0 0 1 8 0z"/><path d="M9 10l3 11 3-11"/></svg>
+          </span>
+          <!-- Tacos -->
+          <span class="pegatina" style="--x:30%; --y:58%; --r:-11deg; --s:50px; background:var(--c4);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 13a9 5 0 0 1 18 0z"/><path d="M6 13c1 3 2.5 5 3 6M12 13c0 3 0 5 0 6M18 13c-1 3-2.5 5-3 6"/></svg>
+          </span>
+          <!-- Fideos / ramen -->
+          <span class="pegatina" style="--x:52%; --y:60%; --r:7deg; --s:52px; background:var(--c2);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11h16l-1.5 8a2 2 0 0 1-2 1.7H7.5a2 2 0 0 1-2-1.7z"/><path d="M7 11c1-2 0-3 1-5M12 11c1-2 0-3 1-5M17 11c1-2 0-3 1-5"/></svg>
+          </span>
+          <!-- Patatas fritas -->
+          <span class="pegatina" style="--x:75%; --y:56%; --r:-8deg; --s:44px; background:var(--c1);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M5 10v10h14V10"/><path d="M8 10V5M12 10V4M16 10V5"/></svg>
+          </span>
+          <!-- Cerezas -->
+          <span class="pegatina" style="--x:90%; --y:38%; --r:14deg; --s:38px; background:var(--c3);">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4c1 2 1 4 0 6"/><circle cx="9" cy="17" r="3.2"/><circle cx="16" cy="15" r="3.2"/></svg>
+          </span>
+        </div>
+
+        <p class="scrapbook-nota">
+          <!-- Sergio: cambia este texto si quieres -->
+          De todos los planes que hemos hecho juntos, "vamos a comer algo"
+          nunca falla. Aquí van algunas de esas veces.
+        </p>
+
+        <div class="comida-fotos">
+          <figure class="polaroid" style="--r:-4deg;"><div class="ph-placeholder">foto comida 1</div></figure>
+          <figure class="polaroid" style="--r:3deg;"><div class="ph-placeholder">foto comida 2</div></figure>
+          <figure class="polaroid" style="--r:-2deg;"><div class="ph-placeholder">foto comida 3</div></figure>
+        </div>
+      </div>
+
+      <div class="zona-continuar">
+        <button class="btn continuar">Continuar</button>
+      </div>
+    </section>
+
     <!-- ESCENA 14 — [v5] Minijuego: laberinto en forma de corazón (gated)
          initLaberinto (juego.js) genera un recorrido distinto cada vez que
          se carga la página dentro de la silueta de corazón de abajo, y
@@ -415,6 +505,14 @@
       </div>
     </section>
 
+  </div>
+
+  <!-- [v6] Lightbox del ticket de la máquina expendedora: initMaquina
+       (juego.js) mueve aquí dentro la .resultado (tira de fotos) cuando
+       sale de la máquina, y la devuelve a su sitio al cerrar. -->
+  <div class="ticket-lightbox" id="ticket-lightbox" aria-hidden="true">
+    <button class="ticket-cerrar" aria-label="Cerrar">×</button>
+    <div class="ticket-lightbox-interior"></div>
   </div>
 
   <nav class="nav">

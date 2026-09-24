@@ -113,19 +113,65 @@ function initMemoria() {
 // Pulsar el botón activa la animación; al terminar se revela el
 // contenido de dentro de .resultado (duplica el bloque en el HTML
 // para poner tu propia tira de fotos, mensaje, etc.)
+// ---------- JUEGO: máquina expendedora ----------
+// Secuencia al pulsar: 1) la moneda de 1€ se desliza hacia la ranura y
+// desaparece (efecto "metida"), 2) el producto cae por dentro de la
+// ventana, 3) la trampilla se abre, 4) la tira de fotos asoma en la boca
+// de la máquina y, un instante después, se AMPLÍA a pantalla completa
+// (como la carta de la leyenda del hilo rojo) para poder verla bien.
+// El elemento .resultado se reutiliza tal cual: solo se traslada dentro
+// del lightbox y se devuelve a su sitio original al cerrar.
 function initMaquina() {
   document.querySelectorAll('.maquina').forEach((maquina) => {
     const boton = maquina.querySelector('.btn');
     const resultado = maquina.querySelector('.resultado');
+    const moneda = maquina.querySelector('.moneda');
     if (!boton) return;
+
+    const lightbox = document.getElementById('ticket-lightbox');
+    const lightboxInterior = lightbox ? lightbox.querySelector('.ticket-lightbox-interior') : null;
+    const btnCerrar = lightbox ? lightbox.querySelector('.ticket-cerrar') : null;
+    let sitioOriginal = null; // { padre, siguiente } para devolver el resultado a su hueco
+
+    function ampliarTicket() {
+      if (!resultado || !lightbox || !lightboxInterior) return;
+      sitioOriginal = { padre: resultado.parentElement, siguiente: resultado.nextSibling };
+      lightboxInterior.appendChild(resultado);
+      lightbox.classList.add('show');
+      lightbox.setAttribute('aria-hidden', 'false');
+    }
+    function cerrarTicket() {
+      if (!resultado || !lightbox) return;
+      lightbox.classList.remove('show');
+      lightbox.setAttribute('aria-hidden', 'true');
+      if (sitioOriginal) {
+        sitioOriginal.padre.insertBefore(resultado, sitioOriginal.siguiente);
+      }
+    }
+    if (btnCerrar) btnCerrar.addEventListener('click', cerrarTicket);
+    if (lightbox) {
+      lightbox.addEventListener('click', (e) => { if (e.target === lightbox) cerrarTicket(); });
+    }
+
     boton.addEventListener('click', () => {
       if (maquina.classList.contains('activada')) return;
-      maquina.classList.add('activada'); // dispara la caída del producto y, con retraso, la trampilla (ver CSS)
       boton.disabled = true;
+
+      // 1) meter la moneda
+      maquina.classList.add('moneda-metida');
+
+      // 2) tras el tintineo de la moneda, dispara la caída del producto
+      //    y, con retraso, la trampilla (ver CSS: .maquina.activada)
+      setTimeout(() => {
+        maquina.classList.add('activada');
+      }, moneda ? 480 : 0);
+
       setTimeout(() => {
         if (resultado) resultado.classList.add('show');
         desbloquearContinuar(maquina);
-      }, 1250); // caída (~0.9s) + retraso de la trampilla (~0.6s) ya solapados
+        // 3) un momento después de asomar, se amplía para verla bien
+        setTimeout(ampliarTicket, 750);
+      }, (moneda ? 480 : 0) + 1250);
     });
   });
 }
@@ -478,23 +524,24 @@ function initHiloRojo() {
 
 /* ---------- JUEGO: laberinto en forma de corazón ---------- */
 // Genera un recorrido válido aleatorio (árbol de expansión, DFS aleatorio)
-// dentro de la silueta de corazón definida en MASCARA_LABERINTO. Solo se
-// puede avanzar a una celda contigua si el laberinto la conectó; si no,
-// la celda se sacude para avisar de que ahí no se puede pasar.
+// dentro de la silueta de corazón definida en MASCARA_LABERINTO (calculada
+// a partir de la fórmula matemática del corazón, no a mano, por eso el
+// contorno queda curvo y no en escalera). Solo se puede avanzar a una
+// "piedra" contigua si el laberinto la conectó; si no, la piedra tiembla
+// para avisar de que por ahí no se puede pasar.
 const MASCARA_LABERINTO = [
-  [0,1,0,0,0,1,0],
-  [1,1,1,0,1,1,1],
+  [0,1,1,0,1,1,0],
+  [1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1],
+  [1,1,1,1,1,1,1],
   [1,1,1,1,1,1,1],
   [0,1,1,1,1,1,0],
+  [0,1,1,1,1,1,0],
   [0,0,1,1,1,0,0],
-  [0,0,0,1,0,0,0],
-  [0,0,0,1,0,0,0],
-  [0,0,0,1,0,0,0],
-  [0,0,0,1,0,0,0],
   [0,0,0,1,0,0,0]
 ];
 const INICIO_LABERINTO = { f: 0, c: 1 };
-const FIN_LABERINTO = { f: 9, c: 3 };
+const FIN_LABERINTO = { f: 8, c: 3 };
 
 function generarConexionesLaberinto(mascara) {
   const filas = mascara.length, cols = mascara[0].length;
@@ -521,108 +568,117 @@ function generarConexionesLaberinto(mascara) {
   return conexiones;
 }
 
+// [v6] Ya no es una cuadrícula de casillas cuadradas: se dibuja como un
+// camino de "piedras" redondas dentro de la silueta de corazón. Las
+// piedras conectadas por el recorrido llevan un caminito de fondo entre
+// ellas; las que NO están conectadas (pero son vecinas) llevan una
+// pequeña "barrera" perpendicular, así se sigue viendo por dónde se
+// puede intentar avanzar sin que parezca un tablero de ajedrez.
 function initLaberinto() {
-  const grid = document.querySelector('.laberinto');
-  if (!grid) return;
-  const contenedor = grid.closest('.escena') || grid.parentElement;
-  const mensajeFinal = contenedor.querySelector('.laberinto-final');
+  const contenedorSvg = document.querySelector('.laberinto');
+  if (!contenedorSvg) return;
+  const escena = contenedorSvg.closest('.escena') || contenedorSvg.parentElement;
+  const mensajeFinal = escena.querySelector('.laberinto-final');
   const conexiones = generarConexionesLaberinto(MASCARA_LABERINTO);
   const clave = (f, c) => f + ',' + c;
 
   const filas = MASCARA_LABERINTO.length;
   const cols = MASCARA_LABERINTO[0].length;
-  const celda = 28, hueco = 4, paso = celda + hueco;
+  const paso = 40;                 // separación entre centros de piedra
+  const radio = paso * 0.36;
 
-  const celdas = {};
-  MASCARA_LABERINTO.forEach((fila, f) => {
-    fila.forEach((valor, c) => {
-      const div = document.createElement('div');
-      if (valor === 1) {
-        div.className = 'laberinto-celda';
-        if (f === INICIO_LABERINTO.f && c === INICIO_LABERINTO.c) div.classList.add('inicio');
-        if (f === FIN_LABERINTO.f && c === FIN_LABERINTO.c) div.classList.add('fin');
-        div.addEventListener('click', () => intentarMover(f, c));
-        celdas[clave(f, c)] = div;
-      } else {
-        div.className = 'laberinto-celda hueco';
-      }
-      grid.appendChild(div);
-    });
-  });
+  const esHueco = (f, c) => f < 0 || f >= filas || c < 0 || c >= cols || MASCARA_LABERINTO[f][c] === 0;
+  const centro = (f, c) => [c * paso + paso / 2, f * paso + paso / 2];
 
-  // --- Dibuja los muros: entre dos celdas del corazón que NO estén
-  // conectadas en el recorrido, y también en todo el borde exterior de la
-  // silueta, para que se vea claramente por dónde se puede intentar ir
-  // (como en un laberinto de verdad, no solo una cuadrícula en blanco). ---
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
-  svg.setAttribute('class', 'laberinto-muros');
-  const anchoTotal = cols * paso - hueco;
-  const altoTotal = filas * paso - hueco;
-  svg.setAttribute('width', anchoTotal);
-  svg.setAttribute('height', altoTotal);
+  const anchoTotal = cols * paso, altoTotal = filas * paso;
   svg.setAttribute('viewBox', `0 0 ${anchoTotal} ${altoTotal}`);
+  svg.setAttribute('role', 'group');
+  svg.setAttribute('aria-label', 'Laberinto en forma de corazón');
 
-  function esHueco(f, c) {
-    return f < 0 || f >= filas || c < 0 || c >= cols || MASCARA_LABERINTO[f][c] === 0;
-  }
-  function dibujarLinea(x1, y1, x2, y2) {
-    const l = document.createElementNS(svgNS, 'line');
-    l.setAttribute('x1', x1); l.setAttribute('y1', y1);
-    l.setAttribute('x2', x2); l.setAttribute('y2', y2);
-    svg.appendChild(l);
-  }
+  // Capa 1: caminitos (líneas gruesas de fondo) entre piedras conectadas
+  const capaCaminos = document.createElementNS(svgNS, 'g');
+  // Capa 2: barreras entre piedras vecinas SIN conectar
+  const capaBarreras = document.createElementNS(svgNS, 'g');
+  // Capa 3: las piedras en sí (encima de todo lo anterior)
+  const capaPiedras = document.createElementNS(svgNS, 'g');
+  svg.append(capaCaminos, capaBarreras, capaPiedras);
 
+  const piedras = {};
   MASCARA_LABERINTO.forEach((fila, f) => {
     fila.forEach((valor, c) => {
       if (valor !== 1) return;
-      const x = c * paso, y = f * paso;
-      const esInicio = f === INICIO_LABERINTO.f && c === INICIO_LABERINTO.c;
-      const esFin = f === FIN_LABERINTO.f && c === FIN_LABERINTO.c;
+      const [x, y] = centro(f, c);
 
-      // Arriba (con hueco de entrada en la celda de inicio)
-      if (!esInicio && (esHueco(f - 1, c) || !conexiones.has(clave(f, c) + '|' + clave(f - 1, c)))) {
-        dibujarLinea(x, y, x + celda, y);
-      }
-      // Abajo (con hueco de salida en la celda de fin)
-      if (!esFin && (esHueco(f + 1, c) || !conexiones.has(clave(f, c) + '|' + clave(f + 1, c)))) {
-        dibujarLinea(x, y + celda, x + celda, y + celda);
-      }
-      // Izquierda
-      if (esHueco(f, c - 1) || !conexiones.has(clave(f, c) + '|' + clave(f, c - 1))) {
-        dibujarLinea(x, y, x, y + celda);
-      }
-      // Derecha
-      if (esHueco(f, c + 1) || !conexiones.has(clave(f, c) + '|' + clave(f, c + 1))) {
-        dibujarLinea(x + celda, y, x + celda, y + celda);
-      }
+      // vecino de la derecha y de abajo: dibuja camino o barrera una sola vez
+      [[0, 1], [1, 0]].forEach(([df, dc]) => {
+        const nf = f + df, nc = c + dc;
+        if (esHueco(nf, nc)) return;
+        const [x2, y2] = centro(nf, nc);
+        if (conexiones.has(clave(f, c) + '|' + clave(nf, nc))) {
+          const linea = document.createElementNS(svgNS, 'line');
+          linea.setAttribute('x1', x); linea.setAttribute('y1', y);
+          linea.setAttribute('x2', x2); linea.setAttribute('y2', y2);
+          linea.setAttribute('class', 'laberinto-conexion');
+          capaCaminos.appendChild(linea);
+        } else {
+          const mx = (x + x2) / 2, my = (y + y2) / 2;
+          const ux = (x2 - x) / paso, uy = (y2 - y) / paso;
+          const nx = -uy, ny = ux;
+          const largoBarrera = paso * 0.42;
+          const barrera = document.createElementNS(svgNS, 'line');
+          barrera.setAttribute('x1', mx - nx * largoBarrera / 2);
+          barrera.setAttribute('y1', my - ny * largoBarrera / 2);
+          barrera.setAttribute('x2', mx + nx * largoBarrera / 2);
+          barrera.setAttribute('y2', my + ny * largoBarrera / 2);
+          barrera.setAttribute('class', 'laberinto-gate');
+          capaBarreras.appendChild(barrera);
+        }
+      });
+
+      const piedra = document.createElementNS(svgNS, 'circle');
+      piedra.setAttribute('cx', x); piedra.setAttribute('cy', y); piedra.setAttribute('r', radio);
+      piedra.setAttribute('class', 'laberinto-pebble');
+      piedra.setAttribute('tabindex', '0');
+      piedra.setAttribute('role', 'button');
+      if (f === INICIO_LABERINTO.f && c === INICIO_LABERINTO.c) piedra.classList.add('inicio');
+      if (f === FIN_LABERINTO.f && c === FIN_LABERINTO.c) piedra.classList.add('fin');
+      const mover = () => intentarMover(f, c);
+      piedra.addEventListener('click', mover);
+      piedra.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); mover(); }
+      });
+      capaPiedras.appendChild(piedra);
+      piedras[clave(f, c)] = piedra;
     });
   });
-  grid.appendChild(svg);
+
+  contenedorSvg.appendChild(svg);
 
   let actualF = INICIO_LABERINTO.f, actualC = INICIO_LABERINTO.c;
-  celdas[clave(actualF, actualC)].classList.add('actual', 'visitada');
+  piedras[clave(actualF, actualC)].classList.add('actual', 'visitada');
 
   function intentarMover(f, c) {
     if (f === actualF && c === actualC) return;
     const permitido = conexiones.has(clave(actualF, actualC) + '|' + clave(f, c));
     if (!permitido) {
-      const div = celdas[clave(f, c)];
-      if (div) {
-        div.classList.remove('denegado');
-        void div.offsetWidth; // reinicia la animación si se repite
-        div.classList.add('denegado');
+      const piedra = piedras[clave(f, c)];
+      if (piedra) {
+        piedra.classList.remove('denegado');
+        void piedra.getBBox && piedra.getBBox(); // reinicia la animación si se repite
+        piedra.classList.add('denegado');
       }
       return;
     }
-    celdas[clave(actualF, actualC)].classList.remove('actual');
+    piedras[clave(actualF, actualC)].classList.remove('actual');
     actualF = f; actualC = c;
-    const div = celdas[clave(actualF, actualC)];
-    div.classList.add('actual', 'visitada');
+    const piedra = piedras[clave(actualF, actualC)];
+    piedra.classList.add('actual', 'visitada');
 
     if (actualF === FIN_LABERINTO.f && actualC === FIN_LABERINTO.c) {
       if (mensajeFinal) mensajeFinal.classList.add('show');
-      desbloquearContinuar(grid);
+      desbloquearContinuar(contenedorSvg);
     }
   }
 }
