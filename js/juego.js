@@ -563,25 +563,59 @@ function initHiloRojo() {
 // contorno queda curvo y no en escalera). Solo se puede avanzar a una
 // "piedra" contigua si el laberinto la conectó; si no, la piedra tiembla
 // para avisar de que por ahí no se puede pasar.
-// [v7] Silueta recalculada a partir de la curva del corazón (para que se
-// note de verdad que es un corazón y no una patata): dos lóbulos
-// definidos arriba, con su hendidura en el centro, y una punta única
-// abajo. INICIO empieza en uno de los lóbulos; FIN es la punta.
+// [v8] Sigue sin verse como un corazón de verdad porque una cuadrícula de
+// piedras, por sí sola, nunca tiene curvas: por muy bien recortada que
+// esté, el ojo solo ve puntos y ángulos rectos. La solución ya no es
+// "afinar la cuadrícula" -- es dejar de depender solo de ella. Ahora:
+// 1) la máscara sale de la fórmula real del corazón (x²+y²-1)³-x²y³≤0,
+//    igual que antes, para que las piedras seleccionables sigan
+//    encajando dentro de la silueta;
+// 2) pero ADEMÁS se dibuja, detrás de las piedras, el contorno EXACTO
+//    del corazón con la curva paramétrica clásica (x=16sin³t, y=13cost-
+//    5cos2t-2cos3t-cos4t) -- la misma curva que un corazón "de verdad"
+//    dibujado a mano -- así que aunque la cuadrícula sea tosca, lo que
+//    el ojo lee de fondo es un corazón real, con sus dos lóbulos curvos
+//    y su punta, no una patata.
 const MASCARA_LABERINTO = [
-  [0,0,1,1,1,0,1,1,1,0,0],
-  [0,0,1,1,1,1,1,1,1,0,0],
+  [0,0,1,1,0,0,0,1,1,0,0],
   [0,1,1,1,1,1,1,1,1,1,0],
   [0,1,1,1,1,1,1,1,1,1,0],
   [0,1,1,1,1,1,1,1,1,1,0],
-  [0,0,1,1,1,1,1,1,1,0,0],
+  [0,1,1,1,1,1,1,1,1,1,0],
+  [0,1,1,1,1,1,1,1,1,1,0],
   [0,0,1,1,1,1,1,1,1,0,0],
   [0,0,0,1,1,1,1,1,0,0,0],
   [0,0,0,0,1,1,1,0,0,0,0],
-  [0,0,0,0,0,1,0,0,0,0,0],
   [0,0,0,0,0,1,0,0,0,0,0]
 ];
-const INICIO_LABERINTO = { f: 0, c: 3 };
-const FIN_LABERINTO = { f: 10, c: 5 };
+const INICIO_LABERINTO = { f: 0, c: 2 };
+const FIN_LABERINTO = { f: 9, c: 5 };
+
+// [v8] Devuelve el atributo "d" del contorno real del corazón (curva
+// paramétrica clásica), reescalado para encajar en un lienzo de
+// anchoV x altoV con un margen alrededor, para que quepan dentro las
+// piedras de la máscara de arriba.
+function trazarSiluetaCorazon(anchoV, altoV, margen) {
+  const puntos = [];
+  const N = 120;
+  for (let i = 0; i <= N; i++) {
+    const t = (i / N) * Math.PI * 2;
+    puntos.push([
+      16 * Math.sin(t) ** 3,
+      13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)
+    ]);
+  }
+  const xs = puntos.map((p) => p[0]), ys = puntos.map((p) => p[1]);
+  const xMin = Math.min(...xs), xMax = Math.max(...xs);
+  const yMin = Math.min(...ys), yMax = Math.max(...ys);
+  const anchoUtil = anchoV - margen * 2, altoUtil = altoV - margen * 2;
+  // ymax (arriba, la hendidura) -> y de SVG pequeña; ymin (la punta) -> y de SVG grande
+  const escalado = puntos.map(([x, y]) => [
+    margen + (x - xMin) / (xMax - xMin) * anchoUtil,
+    margen + (yMax - y) / (yMax - yMin) * altoUtil
+  ]);
+  return escalado.map(([x, y], i) => (i === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1)).join(' ') + ' Z';
+}
 
 function generarConexionesLaberinto(mascara) {
   const filas = mascara.length, cols = mascara[0].length;
@@ -637,13 +671,17 @@ function initLaberinto() {
   svg.setAttribute('role', 'group');
   svg.setAttribute('aria-label', 'Laberinto en forma de corazón');
 
+  // [v8] Capa 0: la silueta real del corazón, DETRÁS de todo lo demás.
+  const silueta = document.createElementNS(svgNS, 'path');
+  silueta.setAttribute('class', 'laberinto-corazon-silueta');
+  silueta.setAttribute('d', trazarSiluetaCorazon(anchoTotal, altoTotal, paso * 0.32));
   // Capa 1: caminitos (líneas gruesas de fondo) entre piedras conectadas
   const capaCaminos = document.createElementNS(svgNS, 'g');
   // Capa 2: barreras entre piedras vecinas SIN conectar
   const capaBarreras = document.createElementNS(svgNS, 'g');
   // Capa 3: las piedras en sí (encima de todo lo anterior)
   const capaPiedras = document.createElementNS(svgNS, 'g');
-  svg.append(capaCaminos, capaBarreras, capaPiedras);
+  svg.append(silueta, capaCaminos, capaBarreras, capaPiedras);
 
   const piedras = {};
   MASCARA_LABERINTO.forEach((fila, f) => {

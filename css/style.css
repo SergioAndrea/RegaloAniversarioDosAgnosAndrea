@@ -67,6 +67,7 @@ h1, h2, h3{
 }
 
 p{ margin: 0 0 1em; }
+figure{ margin: 0; }   /* [v8] sin esto, el margen 1em 40px de <figure> por defecto del navegador desbordaba la galería en móvil */
 
 a{ color: inherit; }
 
@@ -399,6 +400,15 @@ a{ color: inherit; }
   stroke: rgba(244, 236, 224, 0.16);
   stroke-width: 13;
   stroke-linecap: round;
+}
+/* [v8] Silueta real de corazón de fondo, dibujada con la curva clásica
+   del corazón (no con la cuadrícula): así se lee como corazón pase lo
+   que pase con la resolución de piedras que haya encima. */
+.laberinto-corazon-silueta{
+  fill: rgba(227, 165, 171, 0.12);
+  stroke: var(--rose);
+  stroke-width: 2.5;
+  stroke-linejoin: round;
 }
 .laberinto-gate{
   stroke: var(--cream-dim);
