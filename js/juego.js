@@ -557,47 +557,24 @@ function initHiloRojo() {
 
 
 /* ---------- JUEGO: laberinto en forma de corazón ---------- */
-// Genera un recorrido válido aleatorio (árbol de expansión, DFS aleatorio)
-// dentro de la silueta de corazón definida en MASCARA_LABERINTO (calculada
-// a partir de la fórmula matemática del corazón, no a mano, por eso el
-// contorno queda curvo y no en escalera). Solo se puede avanzar a una
-// "piedra" contigua si el laberinto la conectó; si no, la piedra tiembla
-// para avisar de que por ahí no se puede pasar.
-// [v8] Sigue sin verse como un corazón de verdad porque una cuadrícula de
-// piedras, por sí sola, nunca tiene curvas: por muy bien recortada que
-// esté, el ojo solo ve puntos y ángulos rectos. La solución ya no es
-// "afinar la cuadrícula" -- es dejar de depender solo de ella. Ahora:
-// 1) la máscara sale de la fórmula real del corazón (x²+y²-1)³-x²y³≤0,
-//    igual que antes, para que las piedras seleccionables sigan
-//    encajando dentro de la silueta;
-// 2) pero ADEMÁS se dibuja, detrás de las piedras, el contorno EXACTO
-//    del corazón con la curva paramétrica clásica (x=16sin³t, y=13cost-
-//    5cos2t-2cos3t-cos4t) -- la misma curva que un corazón "de verdad"
-//    dibujado a mano -- así que aunque la cuadrícula sea tosca, lo que
-//    el ojo lee de fondo es un corazón real, con sus dos lóbulos curvos
-//    y su punta, no una patata.
-const MASCARA_LABERINTO = [
-  [0,0,1,1,0,0,0,1,1,0,0],
-  [0,1,1,1,1,1,1,1,1,1,0],
-  [0,1,1,1,1,1,1,1,1,1,0],
-  [0,1,1,1,1,1,1,1,1,1,0],
-  [0,1,1,1,1,1,1,1,1,1,0],
-  [0,1,1,1,1,1,1,1,1,1,0],
-  [0,0,1,1,1,1,1,1,1,0,0],
-  [0,0,0,1,1,1,1,1,0,0,0],
-  [0,0,0,0,1,1,1,0,0,0,0],
-  [0,0,0,0,0,1,0,0,0,0,0]
-];
-const INICIO_LABERINTO = { f: 0, c: 2 };
-const FIN_LABERINTO = { f: 9, c: 5 };
+// [v9] Antes la "máscara" (qué celdas de la cuadrícula interna cuentan como
+// corazón) se escribía a mano, y el contorno de corazón se dibujaba aparte
+// con la curva paramétrica real -- dos cosas distintas que casi nunca
+// encajan del todo, así que sobresalían piedras fuera del contorno.
+// Ahora se genera UNA sola vez la curva del corazón, y la máscara se
+// calcula probando el centro de cada celda contra esa misma curva
+// (dentro / fuera con el algoritmo de "ray casting"). Como los dos salen
+// exactamente de los mismos puntos, ya no se pueden desalinear nunca,
+// da igual la resolución de la cuadrícula que se elija.
+const LABERINTO_COLS = 15;
+const LABERINTO_FILAS = 15;
+const LABERINTO_PASO = 24;          // separación entre centros de piedra
+const LABERINTO_MARGEN = LABERINTO_PASO * 0.85; // aire alrededor de la curva
 
-// [v8] Devuelve el atributo "d" del contorno real del corazón (curva
-// paramétrica clásica), reescalado para encajar en un lienzo de
-// anchoV x altoV con un margen alrededor, para que quepan dentro las
-// piedras de la máscara de arriba.
-function trazarSiluetaCorazon(anchoV, altoV, margen) {
+// Curva paramétrica clásica del corazón, en sus unidades matemáticas
+// originales (sin escalar todavía).
+function curvaCorazonCruda(N) {
   const puntos = [];
-  const N = 120;
   for (let i = 0; i <= N; i++) {
     const t = (i / N) * Math.PI * 2;
     puntos.push([
@@ -605,19 +582,70 @@ function trazarSiluetaCorazon(anchoV, altoV, margen) {
       13 * Math.cos(t) - 5 * Math.cos(2 * t) - 2 * Math.cos(3 * t) - Math.cos(4 * t)
     ]);
   }
+  return puntos;
+}
+
+// Reescala los puntos crudos para que quepan en un lienzo anchoV x altoV,
+// dejando "margen" de aire alrededor por los cuatro lados.
+function escalarCurvaCorazon(puntos, anchoV, altoV, margen) {
   const xs = puntos.map((p) => p[0]), ys = puntos.map((p) => p[1]);
   const xMin = Math.min(...xs), xMax = Math.max(...xs);
   const yMin = Math.min(...ys), yMax = Math.max(...ys);
   const anchoUtil = anchoV - margen * 2, altoUtil = altoV - margen * 2;
-  // ymax (arriba, la hendidura) -> y de SVG pequeña; ymin (la punta) -> y de SVG grande
-  const escalado = puntos.map(([x, y]) => [
+  return puntos.map(([x, y]) => [
     margen + (x - xMin) / (xMax - xMin) * anchoUtil,
-    margen + (yMax - y) / (yMax - yMin) * altoUtil
+    margen + (yMax - y) / (yMax - yMin) * altoUtil   // y de SVG crece hacia abajo
   ]);
-  return escalado.map(([x, y], i) => (i === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1)).join(' ') + ' Z';
 }
 
-function generarConexionesLaberinto(mascara) {
+function pathDesdePuntos(puntos) {
+  return puntos.map(([x, y], i) => (i === 0 ? 'M' : 'L') + x.toFixed(1) + ' ' + y.toFixed(1)).join(' ') + ' Z';
+}
+
+// ¿Está (x,y) dentro del polígono cerrado "puntos"? (ray casting clásico)
+function puntoDentroDeCorazon(x, y, puntos) {
+  let dentro = false;
+  for (let i = 0, j = puntos.length - 1; i < puntos.length; j = i++) {
+    const [xi, yi] = puntos[i], [xj, yj] = puntos[j];
+    const cruza = (yi > y) !== (yj > y) && x < (xj - xi) * (y - yi) / (yj - yi) + xi;
+    if (cruza) dentro = !dentro;
+  }
+  return dentro;
+}
+
+// Construye la máscara (1 = piedra dentro del corazón, 0 = fuera) probando
+// el CENTRO de cada celda contra la curva ya escalada al mismo lienzo.
+function construirMascaraCorazon(cols, filas, paso, puntosCorazon) {
+  const mascara = [];
+  for (let f = 0; f < filas; f++) {
+    const fila = [];
+    for (let c = 0; c < cols; c++) {
+      const cx = c * paso + paso / 2, cy = f * paso + paso / 2;
+      fila.push(puntoDentroDeCorazon(cx, cy, puntosCorazon) ? 1 : 0);
+    }
+    mascara.push(fila);
+  }
+  return mascara;
+}
+
+// Entrada = arriba de uno de los dos lóbulos (primera fila con piedra,
+// la más a la izquierda de esa fila). Salida = la punta de abajo (última
+// fila con piedra, la del medio de esa fila).
+function encontrarInicioYFin(mascara) {
+  const indicesRellenos = (fila) => fila.reduce((acc, v, c) => (v === 1 ? acc.concat(c) : acc), []);
+  let inicio = null, fin = null;
+  for (let f = 0; f < mascara.length && !inicio; f++) {
+    const idx = indicesRellenos(mascara[f]);
+    if (idx.length) inicio = { f, c: idx[0] };
+  }
+  for (let f = mascara.length - 1; f >= 0 && !fin; f--) {
+    const idx = indicesRellenos(mascara[f]);
+    if (idx.length) fin = { f, c: idx[Math.floor(idx.length / 2)] };
+  }
+  return { inicio, fin };
+}
+
+function generarConexionesLaberinto(mascara, inicio) {
   const filas = mascara.length, cols = mascara[0].length;
   const visitado = Array.from({ length: filas }, () => Array(cols).fill(false));
   const conexiones = new Set();
@@ -638,43 +666,45 @@ function generarConexionesLaberinto(mascara) {
       }
     });
   }
-  dfs(INICIO_LABERINTO.f, INICIO_LABERINTO.c);
+  dfs(inicio.f, inicio.c);
   return conexiones;
 }
 
-// [v6] Ya no es una cuadrícula de casillas cuadradas: se dibuja como un
-// camino de "piedras" redondas dentro de la silueta de corazón. Las
-// piedras conectadas por el recorrido llevan un caminito de fondo entre
-// ellas; las que NO están conectadas (pero son vecinas) llevan una
-// pequeña "barrera" perpendicular, así se sigue viendo por dónde se
-// puede intentar avanzar sin que parezca un tablero de ajedrez.
+// Camino de "piedras" redondas dentro de la silueta de corazón: las piedras
+// conectadas por el recorrido llevan un caminito de fondo entre ellas; las
+// vecinas SIN conectar llevan una pequeña barrera perpendicular, así se ve
+// por dónde se puede intentar avanzar sin que parezca un tablero de ajedrez.
 function initLaberinto() {
   const contenedorSvg = document.querySelector('.laberinto');
   if (!contenedorSvg) return;
   const escena = contenedorSvg.closest('.escena') || contenedorSvg.parentElement;
   const mensajeFinal = escena.querySelector('.laberinto-final');
-  const conexiones = generarConexionesLaberinto(MASCARA_LABERINTO);
-  const clave = (f, c) => f + ',' + c;
 
-  const filas = MASCARA_LABERINTO.length;
-  const cols = MASCARA_LABERINTO[0].length;
-  const paso = 40;                 // separación entre centros de piedra
+  const cols = LABERINTO_COLS, filas = LABERINTO_FILAS, paso = LABERINTO_PASO;
+  const anchoTotal = cols * paso, altoTotal = filas * paso;
+  const puntosCorazon = escalarCurvaCorazon(curvaCorazonCruda(160), anchoTotal, altoTotal, LABERINTO_MARGEN);
+  const mascara = construirMascaraCorazon(cols, filas, paso, puntosCorazon);
+  const { inicio, fin } = encontrarInicioYFin(mascara);
+  if (!inicio || !fin) return; // seguridad, no debería ocurrir
+
+  const conexiones = generarConexionesLaberinto(mascara, inicio);
+  const clave = (f, c) => f + ',' + c;
   const radio = paso * 0.4;
 
-  const esHueco = (f, c) => f < 0 || f >= filas || c < 0 || c >= cols || MASCARA_LABERINTO[f][c] === 0;
+  const esHueco = (f, c) => f < 0 || f >= filas || c < 0 || c >= cols || mascara[f][c] === 0;
   const centro = (f, c) => [c * paso + paso / 2, f * paso + paso / 2];
 
   const svgNS = 'http://www.w3.org/2000/svg';
   const svg = document.createElementNS(svgNS, 'svg');
-  const anchoTotal = cols * paso, altoTotal = filas * paso;
   svg.setAttribute('viewBox', `0 0 ${anchoTotal} ${altoTotal}`);
   svg.setAttribute('role', 'group');
   svg.setAttribute('aria-label', 'Laberinto en forma de corazón');
 
-  // [v8] Capa 0: la silueta real del corazón, DETRÁS de todo lo demás.
+  // Capa 0: la silueta real del corazón, DETRÁS de todo lo demás (viene de
+  // los MISMOS puntos que se usaron para decidir qué celdas son piedra).
   const silueta = document.createElementNS(svgNS, 'path');
   silueta.setAttribute('class', 'laberinto-corazon-silueta');
-  silueta.setAttribute('d', trazarSiluetaCorazon(anchoTotal, altoTotal, paso * 0.32));
+  silueta.setAttribute('d', pathDesdePuntos(puntosCorazon));
   // Capa 1: caminitos (líneas gruesas de fondo) entre piedras conectadas
   const capaCaminos = document.createElementNS(svgNS, 'g');
   // Capa 2: barreras entre piedras vecinas SIN conectar
@@ -684,12 +714,11 @@ function initLaberinto() {
   svg.append(silueta, capaCaminos, capaBarreras, capaPiedras);
 
   const piedras = {};
-  MASCARA_LABERINTO.forEach((fila, f) => {
+  mascara.forEach((fila, f) => {
     fila.forEach((valor, c) => {
       if (valor !== 1) return;
       const [x, y] = centro(f, c);
 
-      // vecino de la derecha y de abajo: dibuja camino o barrera una sola vez
       [[0, 1], [1, 0]].forEach(([df, dc]) => {
         const nf = f + df, nc = c + dc;
         if (esHueco(nf, nc)) return;
@@ -720,8 +749,8 @@ function initLaberinto() {
       piedra.setAttribute('class', 'laberinto-pebble');
       piedra.setAttribute('tabindex', '0');
       piedra.setAttribute('role', 'button');
-      if (f === INICIO_LABERINTO.f && c === INICIO_LABERINTO.c) piedra.classList.add('inicio');
-      if (f === FIN_LABERINTO.f && c === FIN_LABERINTO.c) piedra.classList.add('fin');
+      if (f === inicio.f && c === inicio.c) piedra.classList.add('inicio');
+      if (f === fin.f && c === fin.c) piedra.classList.add('fin');
       const mover = () => intentarMover(f, c);
       piedra.addEventListener('click', mover);
       piedra.addEventListener('keydown', (e) => {
@@ -734,7 +763,7 @@ function initLaberinto() {
 
   contenedorSvg.appendChild(svg);
 
-  let actualF = INICIO_LABERINTO.f, actualC = INICIO_LABERINTO.c;
+  let actualF = inicio.f, actualC = inicio.c;
   piedras[clave(actualF, actualC)].classList.add('actual', 'visitada');
 
   function intentarMover(f, c) {
@@ -754,7 +783,7 @@ function initLaberinto() {
     const piedra = piedras[clave(actualF, actualC)];
     piedra.classList.add('actual', 'visitada');
 
-    if (actualF === FIN_LABERINTO.f && actualC === FIN_LABERINTO.c) {
+    if (actualF === fin.f && actualC === fin.c) {
       if (mensajeFinal) mensajeFinal.classList.add('show');
       desbloquearContinuar(contenedorSvg);
     }
@@ -769,5 +798,5 @@ document.addEventListener('DOMContentLoaded', () => {
   initTiraFotos();    // [v4]
   initCalendario();   // [v4]
   initHiloRojo();      // [v4] (sustituye a initHiloArrastrable)
-  initLaberinto();     // [v5]
+  initLaberinto();     // [v9] máscara generada desde la propia curva del corazón
 });
