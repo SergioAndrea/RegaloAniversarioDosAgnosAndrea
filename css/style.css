@@ -998,9 +998,14 @@ a{ color: inherit; }
 }
 .cara-atras{ background: var(--bg-soft); color: var(--gold-soft); }
 .cara-frente{ background: var(--gold-soft); color: var(--bg); transform: rotateY(180deg); }
+/* [v7] Foto en la cara frontal: rellena la carta entera, recortada sin deformarse */
+.cara-frente{ overflow: hidden; }
+.cara-frente img{ width:100%; height:100%; object-fit: cover; display:block; pointer-events:none; }
 .carta-memoria.volteada,
 .carta-memoria.encontrada{ transform: rotateY(180deg); }
 .carta-memoria.encontrada .cara-frente{ background: var(--rose); }
+/* [v7] Con foto el fondo rosa no se ve: marcamos la pareja encontrada con un borde */
+.carta-memoria.encontrada{ border-color: var(--rose); box-shadow: 0 0 0 2px var(--rose); }
 
 .memoria-final{
   opacity:0; max-height:0; overflow:hidden;
